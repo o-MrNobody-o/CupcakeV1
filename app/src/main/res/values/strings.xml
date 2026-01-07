@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Cupcake</string>
+    <string name="password">Mot de passe</string>
+    <string name="email">Email</string>
+    <string name="login">Se connecter</string>
+    <string name="cr_er_un_compte">Créer un compte</string>
+    <string name="welcome">Bienvenue 💖</string>
+    <string name="already_have_an_account">Vous avez déjà un compte ?</string>
+    <string name="register">S’inscrire</string>
+    <string name="create_account">Créer un compte 💖</string>
+    <string name="nom">Nom</string>
+    <string name="prenom">Prénom</string>
+    <string name="adresse">Adresse</string>
+    <string name="telephone">Téléphone</string>
+    <string name="confirm_password">Confirmer le mot de passe</string>
+    <string name="show_password">Voir le mot de passe</string>
+    <string name="moncompte">Mon Compte</string>
+    <string name="updateProfile">mettre a jour</string>
+    <string name="deleteProfile">supprimer compte</string>
+    <string name="logout">Logout</string>
+    <string name="pastryProdcut">Nos produits</string>
+    <string name="votreCompte">Votre compte</string>
+</resources>

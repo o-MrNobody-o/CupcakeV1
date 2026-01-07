@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Cupcake Theme Colors -->
+    <color name="cupcake_pink_light">#F7D6DA</color>
+    <color name="cupcake_pink">#FE828C</color>
+    <color name="cupcake_pink_dark">#E86B75</color>
+    <color name="cupcake_brown">#6D4C41</color>
+    
+    <!-- Semantic Colors -->
+    <color name="green">#4CAF50</color>
+    <color name="red">#F44336</color>
+
+    <!-- Legacy/Temp Colors -->
+    <color name="rose_poudre">#F7D6DA</color>
+    <color name="purple_200">#E391F0</color>
+</resources>
