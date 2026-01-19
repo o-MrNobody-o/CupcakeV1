@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
-import com.isetr.cupcake.ui.prodcuts.DataItem
+import com.isetr.cupcake.ui.products.DataItem
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

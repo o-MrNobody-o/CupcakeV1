@@ -1,36 +1,41 @@
 package com.isetr.cupcake.ui.auth
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.isetr.cupcake.R
 import com.isetr.cupcake.databinding.ActivityAuthBinding
-import com.isetr.cupcake.ui.WelcomeActivity
 import com.isetr.cupcake.viewmodel.AuthViewModel
 import com.isetr.cupcake.viewmodel.AuthViewModelFactory
 
-class AuthActivity : AppCompatActivity() {
+class AuthFragment : Fragment() {
 
     private lateinit var binding: ActivityAuthBinding
     private lateinit var viewModel: AuthViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = DataBindingUtil.inflate(inflater, R.layout.activity_auth, container, false)
+        return binding.root
+    }
 
-        // Setup DataBinding
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_auth)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Setup ViewModel
         viewModel = ViewModelProvider(
             this,
-            AuthViewModelFactory(applicationContext)
+            AuthViewModelFactory(requireActivity().applicationContext)
         )[AuthViewModel::class.java]
-
 
         // Observe ViewModel LiveData
         observeViewModel()
@@ -100,30 +105,29 @@ class AuthActivity : AppCompatActivity() {
     // LiveData Observers
     private fun observeViewModel() {
         // Show loading (optional: you can add a ProgressBar later)
-        viewModel.loading.observe(this) { isLoading ->
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             // For now, just disable buttons while loading
             binding.btnLogin.isEnabled = !isLoading
             binding.btnRegister.isEnabled = !isLoading
         }
 
         // Show error messages as Toast
-        viewModel.error.observe(this) { errorMsg ->
+        viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
             errorMsg?.let {
-                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
                 viewModel.clearError() // Clear after showing
             }
         }
 
         // Success observer
-        viewModel.success.observe(this) { isSuccess ->
+        viewModel.success.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 viewModel.currentUser.value?.let { user ->
-                    val intent = Intent(this, WelcomeActivity::class.java).apply {
-                        putExtra("EXTRA_NOM", user.nom)
-                        putExtra("EXTRA_PRENOM", user.prenom)
-                    }
-                    startActivity(intent)
-                    finish()
+                    val action = AuthFragmentDirections.actionAuthFragmentToIntroVideoFragment(
+                        nom = user.nom,
+                        prenom = user.prenom
+                    )
+                    findNavController().navigate(action)
                 }
             }
         }

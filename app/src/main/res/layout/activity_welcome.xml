@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
         <variable
@@ -11,11 +12,9 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="24dp"
         android:background="@color/rose_poudre">
 
-
-    <!-- Welcome text -->
+        <!-- Welcome text -->
         <TextView
             android:id="@+id/tvWelcome"
             android:layout_width="0dp"
@@ -23,51 +22,51 @@
             android:text='@{"Welcome, " + userName + "!"}'
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="#FE828C"
+            android:textColor="@color/cupcake_pink"
             android:gravity="center"
+            android:padding="24dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Go to Pastry Products -->
-        <Button
-            android:id="@+id/btnProducts"
+        <!-- On-Sale Products RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvOnSaleProducts"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/pastryProdcut"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/cupcake_pink"
-            android:padding="14dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toBottomOf="@id/tvWelcome"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="40dp"/>
+            tools:listitem="@layout/item_on_sale_product" />
 
-        <Button
-            android:id="@+id/btnAccount"
+        <!-- Floating Action Button for Cart -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabCart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_shopping_cart"
+            app:backgroundTint="@color/cupcake_pink"
+            app:tint="@color/white"
+            app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Bottom Navigation View -->
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNavigationView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/votreCompte"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/cupcake_pink_dark"
-            android:padding="14dp"
-            app:layout_constraintTop_toBottomOf="@id/btnProducts"
+            android:background="@color/white"
+            app:itemIconTint="@color/cupcake_pink"
+            app:itemTextColor="@color/cupcake_pink"
+            app:menu="@menu/bottom_nav_menu"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"/>
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/logout"
-            android:textColor="@color/white"
-            android:backgroundTint="#FF5252"
-            android:padding="14dp"
-            app:layout_constraintTop_toBottomOf="@id/btnAccount"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="16dp"/>
+            app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

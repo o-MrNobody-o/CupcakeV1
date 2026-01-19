@@ -1,17 +1,17 @@
-package com.isetr.cupcake.ui.prodcuts
+package com.isetr.cupcake.ui.products
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
@@ -21,24 +21,30 @@ import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
-class PastryProdcuts : AppCompatActivity() {
+class PastryProductsFragment : Fragment() {
 
     private val viewModel: PastryProductsViewModel by viewModels()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private lateinit var pastryAdapter: PastryAdapter
-    private lateinit var searchView: SearchView
+    private lateinit var searchView: androidx.appcompat.widget.SearchView
     private lateinit var categoryChipGroup: ChipGroup
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_pastry_prodcuts)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return inflater.inflate(R.layout.activity_pastry_prodcuts, container, false)
+    }
 
-        progressBar = findViewById(R.id.progress_bar)
-        recyclerView = findViewById(R.id.pastry_recycler_view)
-        searchView = findViewById(R.id.search_view)
-        categoryChipGroup = findViewById(R.id.category_chip_group)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        progressBar = view.findViewById(R.id.progress_bar)
+        recyclerView = view.findViewById(R.id.pastry_recycler_view)
+        searchView = view.findViewById(R.id.search_view)
+        categoryChipGroup = view.findViewById(R.id.category_chip_group)
 
         setupRecyclerView()
         setupSearchView()
@@ -50,11 +56,11 @@ class PastryProdcuts : AppCompatActivity() {
             showPastryDescription(pastry)
         }
         recyclerView.adapter = pastryAdapter
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
     }
 
     private fun setupSearchView() {
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 viewModel.setSearchQuery(query.orEmpty())
                 return false
@@ -68,7 +74,7 @@ class PastryProdcuts : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        viewModel.pastriesState.observe(this) { state ->
+        viewModel.pastriesState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is PastryListState.Loading -> {
                     progressBar.visibility = View.VISIBLE
@@ -84,7 +90,7 @@ class PastryProdcuts : AppCompatActivity() {
                 is PastryListState.Error -> {
                     progressBar.visibility = View.GONE
                     recyclerView.visibility = View.GONE
-                    Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -95,7 +101,7 @@ class PastryProdcuts : AppCompatActivity() {
         if (categoryChipGroup.childCount > 0) return
 
         categories.forEach { category ->
-            val chip = Chip(this)
+            val chip = Chip(requireContext())
             chip.text = category
             chip.isCheckable = true
             categoryChipGroup.addView(chip)
@@ -106,19 +112,18 @@ class PastryProdcuts : AppCompatActivity() {
             }
         }
 
-        categoryChipGroup.setOnCheckedChangeListener { group, checkedId ->
-            val chip = group.findViewById<Chip>(checkedId)
-            if (chip != null) {
+        categoryChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
+            if (checkedIds.isNotEmpty()) {
+                val chip = group.findViewById<Chip>(checkedIds[0])
                 viewModel.setCategoryFilter(chip.text.toString())
             } else {
-                // Si aucune puce n'est cochée, afficher toutes les catégories
                 viewModel.setCategoryFilter(null)
             }
         }
     }
 
     private fun showPastryDescription(pastry: Pastry) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_pastry_details, null)
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_pastry_details, null)
 
         val dialogImage = dialogView.findViewById<ImageView>(R.id.dialog_pastry_image)
         val dialogName = dialogView.findViewById<TextView>(R.id.dialog_pastry_name)
@@ -129,7 +134,7 @@ class PastryProdcuts : AppCompatActivity() {
         dialogName.text = pastry.name
         dialogDescription.text = pastry.description
 
-        val alertDialog = AlertDialog.Builder(this)
+        val alertDialog = AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .create()
 

@@ -12,14 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Cupcake">
         <activity
-            android:name=".ui.prodcuts.PastryProdcuts"
-            android:exported="false" />
-        <activity android:name=".ui.account.AccountActivity" />
-        <activity
-            android:name=".ui.WelcomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.auth.AuthActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

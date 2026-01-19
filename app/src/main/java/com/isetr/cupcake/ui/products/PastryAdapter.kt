@@ -1,4 +1,4 @@
-package com.isetr.cupcake.ui.prodcuts
+package com.isetr.cupcake.ui.products
 
 import android.content.res.ColorStateList
 import android.view.LayoutInflater
@@ -16,16 +16,6 @@ import com.isetr.cupcake.data.model.Pastry
 
 private const val VIEW_TYPE_HEADER = 0
 private const val VIEW_TYPE_PASTRY = 1
-
-sealed class DataItem {
-    data class PastryItem(val pastry: Pastry) : DataItem() {
-        override val id = pastry.id
-    }
-    data class HeaderItem(val categoryName: String) : DataItem() {
-        override val id = categoryName
-    }
-    abstract val id: String
-}
 
 class PastryAdapter(private val onDetailClick: (Pastry) -> Unit) :
     ListAdapter<DataItem, RecyclerView.ViewHolder>(PastryDiffCallback) {
