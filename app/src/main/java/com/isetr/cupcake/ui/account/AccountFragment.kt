@@ -17,6 +17,7 @@ import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.UserEntity
 import com.isetr.cupcake.databinding.ActivityAccountBinding
 import com.isetr.cupcake.viewmodel.AccountViewModel
+import com.isetr.cupcake.ui.FooterFragment
 
 class AccountFragment : Fragment() {
 
@@ -76,6 +77,12 @@ class AccountFragment : Fragment() {
             viewModel.logout()
             findNavController().navigate(R.id.action_accountFragment_to_authFragment)
         }
+        if (savedInstanceState == null) {
+            childFragmentManager.beginTransaction()
+                .replace(R.id.footer_container, FooterFragment())
+                .commit()
+        }
+
     }
 
     private fun showDeleteConfirmationDialog() {

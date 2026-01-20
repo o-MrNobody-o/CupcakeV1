@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-        <!-- Single User variable -->
         <variable
             name="user"
             type="com.isetr.cupcake.data.local.UserEntity" />
@@ -12,135 +11,134 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="24dp"
         android:background="@color/rose_poudre">
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/tvAccountTitle"
+        <!-- Main content container with padding -->
+        <ScrollView
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/moncompte"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="@color/cupcake_pink"
-            android:gravity="center"
+            android:layout_height="0dp"
+            android:padding="24dp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <!-- Prénom -->
-        <EditText
-            android:id="@+id/etAccountPrenom"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/prenom"
-            android:textColor="@color/black"
-            android:text="@={user.prenom}"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/tvAccountTitle"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="24dp"/>
+            app:layout_constraintBottom_toTopOf="@id/footer_container">
 
-        <!-- Nom -->
-        <EditText
-            android:id="@+id/etAccountNom"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/tvAccountTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/moncompte"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/cupcake_pink"
+                    android:gravity="center"/>
+
+                <!-- Prénom -->
+                <EditText
+                    android:id="@+id/etAccountPrenom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prenom"
+                    android:textColor="@color/black"
+                    android:text="@={user.prenom}"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="24dp"/>
+
+                <!-- Nom -->
+                <EditText
+                    android:id="@+id/etAccountNom"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/nom"
+                    android:textColor="@color/black"
+                    android:text="@={user.nom}"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"/>
+
+                <!-- Email -->
+                <EditText
+                    android:id="@+id/etAccountEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/email"
+                    android:textColor="@color/black"
+                    android:text="@={user.email}"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"/>
+
+                <!-- Adresse -->
+                <EditText
+                    android:id="@+id/etAccountAdresse"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/adresse"
+                    android:textColor="@color/black"
+                    android:text="@={user.adresse}"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"/>
+
+                <!-- Telephone -->
+                <EditText
+                    android:id="@+id/etAccountTelephone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/telephone"
+                    android:textColor="@color/black"
+                    android:text="@={user.telephone}"
+                    android:inputType="phone"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="12dp"/>
+
+                <!-- Update button -->
+                <Button
+                    android:id="@+id/btnUpdateAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/updateProfile"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/cupcake_pink"
+                    android:layout_marginTop="24dp"/>
+
+                <!-- Delete button -->
+                <Button
+                    android:id="@+id/btnDeleteAccount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/deleteProfile"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/cupcake_pink_dark"
+                    android:layout_marginTop="12dp"/>
+
+                <!-- Logout button -->
+                <Button
+                    android:id="@+id/btnLogout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/logout"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/cupcake_pink"
+                    android:layout_marginTop="12dp"/>
+
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Footer container WITHOUT padding -->
+        <FrameLayout
+            android:id="@+id/footer_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:hint="@string/nom"
-            android:textColor="@color/black"
-            android:text="@={user.nom}"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/etAccountPrenom"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp"/>
-
-        <!-- Email -->
-        <EditText
-            android:id="@+id/etAccountEmail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/email"
-            android:textColor="@color/black"
-            android:text="@={user.email}"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/etAccountNom"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp"/>
-
-        <!-- Adresse -->
-        <EditText
-            android:id="@+id/etAccountAdresse"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/adresse"
-            android:textColor="@color/black"
-            android:text="@={user.adresse}"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/etAccountEmail"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp"/>
-
-        <!-- Telephone -->
-        <EditText
-            android:id="@+id/etAccountTelephone"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="@string/telephone"
-            android:textColor="@color/black"
-            android:text="@={user.telephone}"
-            android:inputType="phone"
-            android:background="@android:drawable/edit_text"
-            android:padding="12dp"
-            app:layout_constraintTop_toBottomOf="@id/etAccountAdresse"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp"/>
-
-        <!-- Update button -->
-        <Button
-            android:id="@+id/btnUpdateAccount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/updateProfile"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/cupcake_pink"
-            android:layout_marginTop="24dp"
-            app:layout_constraintTop_toBottomOf="@id/etAccountTelephone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <!-- Delete button -->
-        <Button
-            android:id="@+id/btnDeleteAccount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/deleteProfile"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/cupcake_pink_dark"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/btnUpdateAccount"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
-        <!-- Logout button -->
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/logout"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/cupcake_pink"
-            android:layout_marginTop="12dp"
-            app:layout_constraintTop_toBottomOf="@id/btnDeleteAccount"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 

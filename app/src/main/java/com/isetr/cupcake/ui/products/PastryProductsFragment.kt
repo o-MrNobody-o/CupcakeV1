@@ -18,6 +18,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
+import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
@@ -49,6 +50,13 @@ class PastryProductsFragment : Fragment() {
         setupRecyclerView()
         setupSearchView()
         observeViewModel()
+
+        if (savedInstanceState == null) {
+            childFragmentManager.beginTransaction()
+                .replace(R.id.footer_container, FooterFragment())
+                .commit()
+        }
+
     }
 
     private fun setupRecyclerView() {

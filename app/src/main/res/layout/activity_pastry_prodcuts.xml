@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/cupcake_pink_light"
-    tools:context=".ui.prodcuts.PastryProdcuts">
+    tools:context=".ui.products.PastryProductsFragment">
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_view"
@@ -61,5 +61,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible" />
+    <!-- Bottom Navigation View -->
+    <!-- Footer container WITHOUT padding -->
+    <FrameLayout
+        android:id="@+id/footer_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

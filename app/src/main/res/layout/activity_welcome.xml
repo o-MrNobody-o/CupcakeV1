@@ -43,7 +43,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:listitem="@layout/item_on_sale_product" />
 
-        <!-- Floating Action Button for Cart -->
+        <!-- Floating Action Button for Cart
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabCart"
             android:layout_width="wrap_content"
@@ -52,21 +52,17 @@
             android:src="@drawable/ic_shopping_cart"
             app:backgroundTint="@color/cupcake_pink"
             app:tint="@color/white"
-            app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+            app:layout_constraintBottom_toTopOf="@id/footer_container"
             app:layout_constraintEnd_toEndOf="parent" />
-
+            -->
         <!-- Bottom Navigation View -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
+        <FrameLayout
+            android:id="@+id/footer_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            app:itemIconTint="@color/cupcake_pink"
-            app:itemTextColor="@color/cupcake_pink"
-            app:menu="@menu/bottom_nav_menu"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.databinding.ActivityWelcomeBinding
+import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.ui.products.DataItem
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
@@ -39,28 +40,10 @@ class WelcomeFragment : Fragment() {
         // Setup RecyclerView for on-sale products
         setupOnSaleProductsRecyclerView()
 
-        // Setup Bottom Navigation
-        binding.bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.navigation_products -> {
-                    findNavController().navigate(R.id.action_welcomeFragment_to_pastryProductsFragment)
-                    true
-                }
-                R.id.navigation_account -> {
-                    findNavController().navigate(R.id.action_welcomeFragment_to_accountFragment)
-                    true
-                }
-                R.id.navigation_orders -> {
-                    findNavController().navigate(R.id.action_welcomeFragment_to_pastryProductsFragment)
-                    true
-                }
-                else -> false
-            }
-        }
-
-        // Setup FAB for cart
-        binding.fabCart.setOnClickListener {
-            findNavController().navigate(R.id.action_welcomeFragment_to_pastryProductsFragment)
+        if (savedInstanceState == null) {
+            childFragmentManager.beginTransaction()
+                .replace(R.id.footer_container, FooterFragment())
+                .commit()
         }
     }
 
