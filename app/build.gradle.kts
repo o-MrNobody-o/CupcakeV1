@@ -75,4 +75,6 @@ dependencies {
 
     // ExoPlayer
     implementation(libs.exoplayer)
+
+    implementation("org.mindrot:jbcrypt:0.4")
 }

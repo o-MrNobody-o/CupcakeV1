@@ -4,15 +4,12 @@ import android.content.Context
 import androidx.lifecycle.*
 import com.isetr.cupcake.data.repository.AuthRepository
 import com.isetr.cupcake.data.local.UserEntity
+import com.isetr.cupcake.utils.PasswordUtil
 import kotlinx.coroutines.launch
 
 class AuthViewModel(context: Context) : ViewModel() {
 
     private val repository = AuthRepository(context)
-
-    // -----------------------
-    // LiveData for UI updates
-    // -----------------------
     private val _loading = MutableLiveData(false)
     val loading: LiveData<Boolean> = _loading
 
@@ -25,9 +22,7 @@ class AuthViewModel(context: Context) : ViewModel() {
     private val _currentUser = MutableLiveData<UserEntity?>()
     val currentUser: LiveData<UserEntity?> = _currentUser
 
-    // -----------------------
     // Login
-    // -----------------------
     fun onLoginClicked(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
             _error.value = "Please enter email and password"
@@ -37,28 +32,9 @@ class AuthViewModel(context: Context) : ViewModel() {
         _loading.value = true
         viewModelScope.launch {
             try {
-                // ----------- Room login -----------
-                var user: UserEntity? = repository.loginUser(email, password)
+                val user = repository.getUserByEmail(email) // get by email only
 
-                // ----------- Firebase login -----------
-                /*
-                if (user == null) {
-                    val firebaseData = repository.loginUserFirebase(email, password)
-                    if (firebaseData != null) {
-                        user = UserEntity(
-                            nom = firebaseData["nom"] ?: "",
-                            prenom = firebaseData["prenom"] ?: "",
-                            email = firebaseData["email"] ?: "",
-                            adresse = firebaseData["adresse"] ?: "",
-                            telephone = firebaseData["telephone"] ?: "",
-                            password = password
-                        )
-                        // Save to local Room as cache
-                        repository.registerUser(user)
-                    }
-                }
-                */
-                if (user != null) {
+                if (user != null && PasswordUtil.verify(password, user.password)) {
                     _currentUser.value = user
                     _success.value = true
                 } else {
@@ -72,9 +48,7 @@ class AuthViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // -----------------------
     // Register
-    // -----------------------
     fun onRegisterClicked(
         nom: String,
         prenom: String,
@@ -104,17 +78,15 @@ class AuthViewModel(context: Context) : ViewModel() {
         _loading.value = true
         viewModelScope.launch {
             try {
-                // ----------- Firebase registration -----------
-                //repository.registerUserFirebase(nom, prenom, email, adresse, telephone, password)
+                val hashedPassword = PasswordUtil.hash(password) // <-- hash here
 
-                // ----------- Room registration (local cache) -----------
                 val user = UserEntity(
                     nom = nom,
                     prenom = prenom,
                     email = email,
                     adresse = adresse,
                     telephone = telephone,
-                    password = password
+                    password = hashedPassword
                 )
                 repository.registerUser(user)
 
