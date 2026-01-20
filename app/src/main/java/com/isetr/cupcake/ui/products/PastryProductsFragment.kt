@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.isetr.cupcake.R
+import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.viewmodel.PastryListState
@@ -60,12 +61,26 @@ class PastryProductsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        pastryAdapter = PastryAdapter { pastry ->
-            showPastryDescription(pastry)
-        }
+        pastryAdapter = PastryAdapter(
+            onDetailClick = { pastry -> showPastryDescription(pastry) },
+            onAddToCartClick = { pastry ->
+                val currentUserId = 1 // replace with actual logged-in user ID
+                val cartItem = CartEntity(
+                    productId = pastry.id,
+                    userId = currentUserId,
+                    name = pastry.name,
+                    price = pastry.price,
+                    quantity = 1,
+                    imageRes = pastry.imageRes
+                )
+                // Insert into DB
+                viewModel.addToCart(cartItem)
+            }
+        )
         recyclerView.adapter = pastryAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
     }
+
 
     private fun setupSearchView() {
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {

@@ -1,23 +1,26 @@
 package com.isetr.cupcake.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.isetr.cupcake.R
+import com.isetr.cupcake.data.local.AppDatabase
+import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.ui.products.DataItem
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 sealed class PastryListState {
     object Loading : PastryListState()
-    // On envoie aussi la liste des catégories à l'UI
     data class Success(val data: List<DataItem>, val categories: List<String>) : PastryListState()
     data class Error(val message: String) : PastryListState()
 }
 
-class PastryProductsViewModel : ViewModel() {
+class PastryProductsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _pastriesState = MutableLiveData<PastryListState>()
     val pastriesState: LiveData<PastryListState> = _pastriesState
@@ -26,6 +29,9 @@ class PastryProductsViewModel : ViewModel() {
     private var _searchQuery: String? = null
     private var _selectedCategory: String? = null
 
+    // --- CART DAO ---
+    private val cartDao = AppDatabase.getInstance(application).cartDao()
+
     init {
         fetchPastries()
     }
@@ -33,7 +39,7 @@ class PastryProductsViewModel : ViewModel() {
     private fun fetchPastries() {
         viewModelScope.launch {
             _pastriesState.value = PastryListState.Loading
-            delay(1500)
+            delay(1500) // simulate loading
 
             _allPastries = getDummyPastries()
             applyFilters()
@@ -51,20 +57,16 @@ class PastryProductsViewModel : ViewModel() {
     }
 
     private fun applyFilters() {
-        // 1. Filtrer par catégorie
         val categoryFilteredList = if (_selectedCategory == null || _selectedCategory == "Toutes") {
             _allPastries
         } else {
             _allPastries.filter { it.category.equals(_selectedCategory, ignoreCase = true) }
         }
 
-        // 2. Filtrer par nom de produit
         val finalList = if (_searchQuery.isNullOrBlank()) {
             categoryFilteredList
         } else {
-            categoryFilteredList.filter {
-                it.name.contains(_searchQuery!!, ignoreCase = true)
-            }
+            categoryFilteredList.filter { it.name.contains(_searchQuery!!, ignoreCase = true) }
         }
 
         updateUi(finalList)
@@ -74,22 +76,34 @@ class PastryProductsViewModel : ViewModel() {
         val dataItems = mutableListOf<DataItem>()
         val pastriesByCategory = pastries.groupBy { it.category }
 
-        // Si on a un filtre de catégorie, on n'affiche pas les en-têtes
         if (_selectedCategory != null && _selectedCategory != "Toutes") {
-             pastries.forEach { pastry ->
-                dataItems.add(DataItem.PastryItem(pastry))
-            }
+            pastries.forEach { pastry -> dataItems.add(DataItem.PastryItem(pastry)) }
         } else {
             pastriesByCategory.forEach { (category, pastryItems) ->
                 dataItems.add(DataItem.HeaderItem(category))
-                pastryItems.forEach { pastry ->
-                    dataItems.add(DataItem.PastryItem(pastry))
-                }
+                pastryItems.forEach { pastry -> dataItems.add(DataItem.PastryItem(pastry)) }
             }
         }
-        
+
         val categories = listOf("Toutes") + _allPastries.map { it.category }.distinct()
         _pastriesState.value = PastryListState.Success(dataItems, categories)
+    }
+
+    // -------------------
+    // CART FUNCTIONS
+    // -------------------
+    fun addToCart(cartItem: CartEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            cartDao.insertCartItem(cartItem)
+        }
+    }
+
+    // Optional: get cart items for a user
+    fun getCartItems(userId: Int, callback: (List<CartEntity>) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val items = cartDao.getCartItemsForUser(userId)
+            callback(items)
+        }
     }
 
     private fun getDummyPastries(): List<Pastry> {

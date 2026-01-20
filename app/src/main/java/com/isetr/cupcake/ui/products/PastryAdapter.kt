@@ -17,7 +17,8 @@ import com.isetr.cupcake.data.model.Pastry
 private const val VIEW_TYPE_HEADER = 0
 private const val VIEW_TYPE_PASTRY = 1
 
-class PastryAdapter(private val onDetailClick: (Pastry) -> Unit) :
+class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
+                    private val onAddToCartClick: (Pastry) -> Unit) :
     ListAdapter<DataItem, RecyclerView.ViewHolder>(PastryDiffCallback) {
 
     class PastryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,8 +28,9 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit) :
         private val pastryAvailability: TextView = itemView.findViewById(R.id.pastry_availability)
         private val pastryPromotionDetails: TextView = itemView.findViewById(R.id.pastry_promotion_details)
         private val detailButton: Button = itemView.findViewById(R.id.detail_button)
+        private val addToCartButton: Button = itemView.findViewById(R.id.add_to_cart_button)
 
-        fun bind(pastry: Pastry, onDetailClick: (Pastry) -> Unit) {
+        fun bind(pastry: Pastry, onDetailClick: (Pastry) -> Unit ,onAddToCartClick: (Pastry) -> Unit) {
             val context = itemView.context
 
             pastryName.text = pastry.name
@@ -57,7 +59,8 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit) :
             }
 
             detailButton.setOnClickListener { onDetailClick(pastry) }
-        }
+            addToCartButton.setOnClickListener { onAddToCartClick(pastry) }
+            }
     }
 
     class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -93,7 +96,7 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit) :
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
             is DataItem.HeaderItem -> (holder as CategoryViewHolder).bind(item.categoryName)
-            is DataItem.PastryItem -> (holder as PastryViewHolder).bind(item.pastry, onDetailClick)
+            is DataItem.PastryItem -> (holder as PastryViewHolder).bind(item.pastry, onDetailClick, onAddToCartClick)
         }
     }
 }

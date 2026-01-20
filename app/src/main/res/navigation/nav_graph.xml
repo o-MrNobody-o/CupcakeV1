@@ -5,6 +5,7 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/authFragment">
 
+    <!-- Auth Fragment -->
     <fragment
         android:id="@+id/authFragment"
         android:name="com.isetr.cupcake.ui.auth.AuthFragment"
@@ -15,6 +16,14 @@
             app:destination="@id/introVideoFragment" />
     </fragment>
 
+    <!-- Cart Fragment -->
+    <fragment
+        android:id="@+id/cartFragment"
+        android:name="com.isetr.cupcake.ui.cart.CartFragment"
+        android:label="@string/cart"
+        tools:layout="@layout/fragment_cart" />
+
+    <!-- Intro Video Fragment -->
     <fragment
         android:id="@+id/introVideoFragment"
         android:name="com.isetr.cupcake.ui.intro.IntroVideoFragment"
@@ -33,6 +42,7 @@
             app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- Welcome Fragment -->
     <fragment
         android:id="@+id/welcomeFragment"
         android:name="com.isetr.cupcake.ui.welcome.WelcomeFragment"
@@ -57,6 +67,7 @@
             app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- Account Fragment -->
     <fragment
         android:id="@+id/accountFragment"
         android:name="com.isetr.cupcake.ui.account.AccountFragment"
@@ -69,11 +80,24 @@
             app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- Pastry Products Fragment -->
     <fragment
         android:id="@+id/pastryProductsFragment"
         android:name="com.isetr.cupcake.ui.products.PastryProductsFragment"
         android:label="@string/pastryProdcut"
-        tools:layout="@layout/activity_pastry_prodcuts">
-    </fragment>
+        tools:layout="@layout/activity_pastry_prodcuts" />
+
+    <!-- Global Actions for Footer Navigation -->
+    <action
+        android:id="@+id/action_global_pastryProducts"
+        app:destination="@id/pastryProductsFragment" />
+
+    <action
+        android:id="@+id/action_global_account"
+        app:destination="@id/accountFragment" />
+
+    <action
+        android:id="@+id/action_global_cart"
+        app:destination="@id/cartFragment" />
 
 </navigation>

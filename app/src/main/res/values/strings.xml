@@ -22,4 +22,8 @@
     <string name="votreCompte">Votre compte</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Panier">Panier</string>
+    <string name="ajouter_au_panier">Ajouter au panier</string>
+    <string name="d_tails">Détails</string>
+    <string name="cart">cart</string>
 </resources>

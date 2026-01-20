@@ -5,10 +5,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [UserEntity::class], version = 1)
+@Database(
+    entities = [UserEntity::class, CartEntity::class], // <-- added CartEntity
+    version = 3 // <-- incremented version
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
+    abstract fun cartDao(): CartDao // <-- added CartDao
 
     companion object {
         @Volatile
@@ -25,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "cupcake-db"
             )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration() // optional for dev
                 .build()
     }
 }

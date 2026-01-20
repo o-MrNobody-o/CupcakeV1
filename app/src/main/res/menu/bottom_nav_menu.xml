@@ -9,7 +9,7 @@
         android:icon="@drawable/ic_account"
         android:title="@string/votreCompte" />
     <item
-        android:id="@+id/navigation_orders"
+        android:id="@+id/navigation_cart"
         android:icon="@drawable/ic_orders"
-        android:title="Orders" />
+        android:title="@string/Panier" />
 </menu>

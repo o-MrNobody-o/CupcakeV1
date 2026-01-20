@@ -7,13 +7,13 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.databinding.ActivityWelcomeBinding
 import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.ui.products.DataItem
+import com.isetr.cupcake.ui.products.PastryAdapter
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
@@ -37,9 +37,10 @@ class WelcomeFragment : Fragment() {
         val prenom = arguments?.getString("prenom") ?: ""
         binding.userName = "$prenom $nom"
 
-        // Setup RecyclerView for on-sale products
+        // Setup horizontal RecyclerView for on-sale products
         setupOnSaleProductsRecyclerView()
 
+        // Add footer fragment
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
                 .replace(R.id.footer_container, FooterFragment())
@@ -48,30 +49,63 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun setupOnSaleProductsRecyclerView() {
+        // Horizontal layout
         val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvOnSaleProducts.layoutManager = layoutManager
 
-        // Observe the ViewModel for products
+        // Reuse same PastryAdapter
+        val adapter = PastryAdapter(
+            onDetailClick = { pastry ->
+                showPastryDescription(pastry)
+            },
+            onAddToCartClick = { /* No add to cart in welcome screen */ }
+        )
+        binding.rvOnSaleProducts.adapter = adapter
+
+        // Observe ViewModel
         viewModel.pastriesState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is PastryListState.Loading -> {
-                    // TODO: show loading indicator if needed
+                    // Optionally show a loading indicator
                 }
                 is PastryListState.Success -> {
-                    // Filter only on-sale products
-                    val onSaleProducts: List<Pastry> = state.data
-                        .filterIsInstance<DataItem.PastryItem>()
-                        .map { it.pastry }
-                        .filter { it.inPromotion }
-
-                    // Setup adapter
-                    val adapter = OnSaleProductAdapter(onSaleProducts)
-                    binding.rvOnSaleProducts.adapter = adapter
+                    // Convert to DataItem.PastryItem and filter onPromotion
+                    val onSaleItems: List<DataItem> = state.data
+                        .filterIsInstance<DataItem.PastryItem>() // keep only pastry items
+                        .filter { it.pastry.inPromotion }       // only on-sale pastries
+                    adapter.submitList(onSaleItems)
                 }
+
                 is PastryListState.Error -> {
-                    // TODO: show error message
+                    // Optionally show error message
                 }
             }
         }
+    }
+
+    private fun showPastryDescription(pastry: Pastry) {
+        // Reuse same logic as ProductsFragment to show details
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_pastry_details, null)
+
+        val dialogImage = dialogView.findViewById<android.widget.ImageView>(R.id.dialog_pastry_image)
+        val dialogName = dialogView.findViewById<android.widget.TextView>(R.id.dialog_pastry_name)
+        val dialogDescription = dialogView.findViewById<android.widget.TextView>(R.id.dialog_pastry_description)
+        val closeButton = dialogView.findViewById<android.widget.Button>(R.id.dialog_close_button)
+
+        dialogImage.setImageResource(pastry.imageRes)
+        dialogName.text = pastry.name
+        dialogDescription.text = pastry.description
+
+        val alertDialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        closeButton.setOnClickListener {
+            alertDialog.dismiss()
+        }
+
+        alertDialog.show()
     }
 }
