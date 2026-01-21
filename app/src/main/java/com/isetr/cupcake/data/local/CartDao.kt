@@ -21,7 +21,15 @@ interface CartDao {
     @Query("SELECT * FROM cart_items WHERE userId = :userId")
     suspend fun getCartItemsForUser(userId: Int): List<CartEntity>
 
-    // Clear all cart items for a user (optional)
+    // Get a specific cart item by productId and userId
+    @Query("SELECT * FROM cart_items WHERE productId = :productId AND userId = :userId")
+    suspend fun getCartItem(productId: String, userId: Int): CartEntity?
+
+    // Update quantity for a specific cart item
+    @Query("UPDATE cart_items SET quantity = :newQuantity WHERE productId = :productId AND userId = :userId")
+    suspend fun updateQuantity(productId: String, userId: Int, newQuantity: Int)
+
+    // Clear all cart items for a specific user
     @Query("DELETE FROM cart_items WHERE userId = :userId")
     suspend fun clearCart(userId: Int)
 }

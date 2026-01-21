@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isetr.cupcake.R
+import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.databinding.ActivityWelcomeBinding
 import com.isetr.cupcake.ui.FooterFragment
@@ -58,7 +59,23 @@ class WelcomeFragment : Fragment() {
             onDetailClick = { pastry ->
                 showPastryDescription(pastry)
             },
-            onAddToCartClick = { /* No add to cart in welcome screen */ }
+            //onAddToCartClick = { /* No add to cart in welcome screen */ }
+
+            onAddToCartClick = { pastry ->
+                val currentUserId = 1 // replace with actual logged-in user ID
+                val cartItem = CartEntity(
+                    productId = pastry.id,
+                    userId = currentUserId,
+                    name = pastry.name,
+                    price = pastry.price,
+                    quantity = 1,
+                    imageRes = pastry.imageRes
+                )
+                // Insert into DB
+                viewModel.addToCart(cartItem)
+            }
+
+
         )
         binding.rvOnSaleProducts.adapter = adapter
 

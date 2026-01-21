@@ -6,8 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.isetr.cupcake.R
-import com.isetr.cupcake.data.local.AppDatabase
 import com.isetr.cupcake.data.local.CartEntity
+import com.isetr.cupcake.data.repository.CartRepository
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.ui.products.DataItem
 import kotlinx.coroutines.Dispatchers
@@ -29,8 +29,8 @@ class PastryProductsViewModel(application: Application) : AndroidViewModel(appli
     private var _searchQuery: String? = null
     private var _selectedCategory: String? = null
 
-    // --- CART DAO ---
-    private val cartDao = AppDatabase.getInstance(application).cartDao()
+    // --- CART REPOSITORY ---
+    private val cartRepository = CartRepository(application.applicationContext)
 
     init {
         fetchPastries()
@@ -94,14 +94,14 @@ class PastryProductsViewModel(application: Application) : AndroidViewModel(appli
     // -------------------
     fun addToCart(cartItem: CartEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            cartDao.insertCartItem(cartItem)
+            cartRepository.addOrUpdateCartItem(cartItem)
         }
     }
 
     // Optional: get cart items for a user
     fun getCartItems(userId: Int, callback: (List<CartEntity>) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            val items = cartDao.getCartItemsForUser(userId)
+            val items = cartRepository.getCartItemsForUser(userId)
             callback(items)
         }
     }

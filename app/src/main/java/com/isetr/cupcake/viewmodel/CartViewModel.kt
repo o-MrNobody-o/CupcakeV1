@@ -5,14 +5,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.isetr.cupcake.data.local.AppDatabase
 import com.isetr.cupcake.data.local.CartEntity
+import com.isetr.cupcake.data.repository.CartRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class CartViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val cartDao = AppDatabase.getInstance(application).cartDao()
+    private val cartRepository = CartRepository(application.applicationContext)
 
     // LiveData for the user's cart items
     private val _cartItems = MutableLiveData<List<CartEntity>>()
@@ -21,15 +21,15 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     // Load cart items for a specific user
     fun loadCart(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            val items = cartDao.getCartItemsForUser(userId)
+            val items = cartRepository.getCartItemsForUser(userId)
             _cartItems.postValue(items)
         }
     }
 
-    // Add a new item to the cart
+    // Add a new item to the cart (or update if exists)
     fun addToCart(cartItem: CartEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            cartDao.insertCartItem(cartItem)
+            cartRepository.addOrUpdateCartItem(cartItem)
             // Reload cart for the same user
             loadCart(cartItem.userId)
         }
@@ -38,7 +38,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     // Update an existing cart item
     fun updateCartItem(cartItem: CartEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            cartDao.updateCartItem(cartItem)
+            cartRepository.updateCartItem(cartItem)
             loadCart(cartItem.userId)
         }
     }
@@ -46,7 +46,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     // Remove an item from the cart
     fun removeCartItem(cartItem: CartEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            cartDao.deleteCartItem(cartItem)
+            cartRepository.deleteCartItem(cartItem)
             loadCart(cartItem.userId)
         }
     }
@@ -54,7 +54,7 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
     // Clear entire cart for a user
     fun clearCart(userId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            cartDao.clearCart(userId)
+            cartRepository.clearCart(userId)
             loadCart(userId)
         }
     }
