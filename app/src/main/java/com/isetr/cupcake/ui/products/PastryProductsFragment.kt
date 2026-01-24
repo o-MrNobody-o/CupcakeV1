@@ -1,6 +1,9 @@
 package com.isetr.cupcake.ui.products
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +21,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.CartEntity
-import com.isetr.cupcake.data.model.Pastry
+import com.isetr.cupcake.data.local.Pastry
 import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
@@ -75,6 +78,8 @@ class PastryProductsFragment : Fragment() {
                 )
                 // Insert into DB
                 viewModel.addToCart(cartItem)
+                // Show confirmation dialog
+                showAddToCartDialog(pastry.name)
             }
         )
         recyclerView.adapter = pastryAdapter
@@ -168,5 +173,34 @@ class PastryProductsFragment : Fragment() {
         }
 
         alertDialog.show()
+    }
+
+    private fun showAddToCartDialog(productName: String) {
+        val title = SpannableString("Succès !")
+        title.setSpan(
+            ForegroundColorSpan(Color.parseColor("#E91E63")),
+            0,
+            title.length,
+            0
+        )
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage("$productName a été ajouté au panier avec succès.")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
+
+        // Background color to white
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
+        
+        // Message text color to black
+        alertDialog.findViewById<TextView>(android.R.id.message)?.setTextColor(Color.BLACK)
+        
+        // Button color to pink
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
     }
 }

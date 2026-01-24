@@ -1,6 +1,6 @@
 package com.isetr.cupcake.ui.products
 
-import com.isetr.cupcake.data.model.Pastry
+import com.isetr.cupcake.data.local.Pastry
 
 sealed class DataItem {
     data class PastryItem(val pastry: Pastry) : DataItem() {

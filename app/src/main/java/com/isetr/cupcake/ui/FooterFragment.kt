@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.isetr.cupcake.R
 
@@ -20,6 +19,10 @@ class FooterFragment : Fragment(R.layout.fragment_footer) {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
+                R.id.navigation_home -> {
+                    navController.navigate(R.id.action_global_welcome)
+                    true
+                }
                 R.id.navigation_products -> {
                     navController.navigate(R.id.action_global_pastryProducts)
                     true

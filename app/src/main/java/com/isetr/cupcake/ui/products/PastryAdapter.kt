@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.isetr.cupcake.R
-import com.isetr.cupcake.data.model.Pastry
+import com.isetr.cupcake.data.local.Pastry
 
 private const val VIEW_TYPE_HEADER = 0
 private const val VIEW_TYPE_PASTRY = 1
@@ -47,8 +47,6 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
                 val redColor = ContextCompat.getColor(context, R.color.red)
                 pastryAvailability.setTextColor(redColor)
                 pastryAvailability.compoundDrawableTintList = ColorStateList.valueOf(redColor)
-                // Optionnel : changer l'icône pour une croix
-                // pastryAvailability.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_cancel_24, 0, 0, 0)
             }
 
             if (pastry.inPromotion && pastry.discountRate > 0) {

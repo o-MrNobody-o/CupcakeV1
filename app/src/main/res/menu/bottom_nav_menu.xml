@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/navigation_home"
+        android:icon="@drawable/home"
+        android:title="Accueil" />
+    <item
         android:id="@+id/navigation_products"
         android:icon="@drawable/ic_products"
-        android:title="@string/pastryProdcut" />
+        android:title="Catalogue" />
     <item
         android:id="@+id/navigation_account"
         android:icon="@drawable/ic_account"
-        android:title="@string/votreCompte" />
+        android:title="Compte" />
     <item
         android:id="@+id/navigation_cart"
         android:icon="@drawable/ic_orders"
-        android:title="@string/Panier" />
+        android:title="Panier" />
 </menu>

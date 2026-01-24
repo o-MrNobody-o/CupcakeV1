@@ -89,6 +89,11 @@
 
     <!-- Global Actions for Footer Navigation -->
     <action
+        android:id="@+id/action_global_welcome"
+        app:destination="@id/welcomeFragment"
+        app:launchSingleTop="true" />
+
+    <action
         android:id="@+id/action_global_pastryProducts"
         app:destination="@id/pastryProductsFragment" />
 

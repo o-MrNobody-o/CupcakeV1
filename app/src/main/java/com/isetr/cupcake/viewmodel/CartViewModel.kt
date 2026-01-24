@@ -6,13 +6,25 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.isetr.cupcake.data.local.CartEntity
+import com.isetr.cupcake.data.local.OrderEntity
 import com.isetr.cupcake.data.repository.CartRepository
+import com.isetr.cupcake.data.repository.OrderRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class CartViewModel(application: Application) : AndroidViewModel(application) {
+sealed class OrderState {
+    object Idle : OrderState()
+    object Loading : OrderState()
+    object Success : OrderState()
+    data class Error(val message: String) : OrderState()
+}
 
+class CartViewModel(application: Application) : AndroidViewModel(application) {
+    private val orderRepository = OrderRepository(application)
     private val cartRepository = CartRepository(application.applicationContext)
+
+    private val _orderState = MutableLiveData<OrderState>(OrderState.Idle)
+    val orderState: LiveData<OrderState> = _orderState
 
     // LiveData for the user's cart items
     private val _cartItems = MutableLiveData<List<CartEntity>>()
@@ -23,15 +35,6 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch(Dispatchers.IO) {
             val items = cartRepository.getCartItemsForUser(userId)
             _cartItems.postValue(items)
-        }
-    }
-
-    // Add a new item to the cart (or update if exists)
-    fun addToCart(cartItem: CartEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            cartRepository.addOrUpdateCartItem(cartItem)
-            // Reload cart for the same user
-            loadCart(cartItem.userId)
         }
     }
 
@@ -57,5 +60,33 @@ class CartViewModel(application: Application) : AndroidViewModel(application) {
             cartRepository.clearCart(userId)
             loadCart(userId)
         }
+    }
+
+    fun checkout(userId: Int, total: Double, paymentMethod: String, cardNumber: String?, shippingAddress: String) {
+        viewModelScope.launch {
+            _orderState.value = OrderState.Loading
+            try {
+                val order = OrderEntity(
+                    userId = userId,
+                    totalAmount = total,
+                    paymentMethod = paymentMethod,
+                    cardNumber = cardNumber,
+                    shippingAddress = shippingAddress
+                )
+                val result = orderRepository.placeOrder(order)
+                if (result != -1L) {
+                    _orderState.value = OrderState.Success
+                    loadCart(userId) // Refresh cart (should be empty now)
+                } else {
+                    _orderState.value = OrderState.Error("Échec de la commande")
+                }
+            } catch (e: Exception) {
+                _orderState.value = OrderState.Error(e.message ?: "Une erreur est survenue")
+            }
+        }
+    }
+
+    fun resetOrderState() {
+        _orderState.value = OrderState.Idle
     }
 }

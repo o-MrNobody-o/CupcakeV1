@@ -10,5 +10,6 @@
         android:background="@color/white"
         app:itemIconTint="@color/cupcake_pink"
         app:itemTextColor="@color/cupcake_pink"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu"/>
 </FrameLayout>
