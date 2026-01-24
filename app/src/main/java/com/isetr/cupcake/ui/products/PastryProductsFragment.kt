@@ -75,6 +75,7 @@ class PastryProductsFragment : Fragment() {
                 )
                 // Insert into DB
                 viewModel.addToCart(cartItem)
+                Toast.makeText(requireContext(), "Produit ajouté", Toast.LENGTH_SHORT).show()
             }
         )
         recyclerView.adapter = pastryAdapter

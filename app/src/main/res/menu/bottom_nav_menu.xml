@@ -12,4 +12,8 @@
         android:id="@+id/navigation_cart"
         android:icon="@drawable/ic_orders"
         android:title="@string/Panier" />
+    <item
+        android:id="@+id/navigation_welcome"
+        android:icon="@drawable/ic_home"
+        android:title="@string/accueil" />
 </menu>

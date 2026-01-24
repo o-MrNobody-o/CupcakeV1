@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.CartEntity
@@ -15,6 +17,7 @@ import com.isetr.cupcake.databinding.ActivityWelcomeBinding
 import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.ui.products.DataItem
 import com.isetr.cupcake.ui.products.PastryAdapter
+import com.isetr.cupcake.viewmodel.AccountViewModel
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
@@ -22,6 +25,7 @@ class WelcomeFragment : Fragment() {
 
     private lateinit var binding: ActivityWelcomeBinding
     private val viewModel: PastryProductsViewModel by viewModels()
+    private lateinit var accountViewModel: AccountViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,9 +38,27 @@ class WelcomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val nom = arguments?.getString("nom") ?: ""
-        val prenom = arguments?.getString("prenom") ?: ""
-        binding.userName = "$prenom $nom"
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.hide()
+
+        // Shared ViewModel for current user
+        accountViewModel = ViewModelProvider(
+            requireActivity(),
+            AccountViewModel.Factory(requireActivity().application)
+        ).get(AccountViewModel::class.java)
+
+        // Observe current user
+        accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
+            user?.let {
+                binding.userName = "${it.prenom} ${it.nom}"
+            }
+        }
+
+        // Fallback for first-time nav arguments
+        val nomArg = arguments?.getString("nom")
+        val prenomArg = arguments?.getString("prenom")
+        if (!nomArg.isNullOrEmpty() && !prenomArg.isNullOrEmpty()) {
+            binding.userName = "$prenomArg $nomArg"
+        }
 
         // Setup horizontal RecyclerView for on-sale products
         setupOnSaleProductsRecyclerView()
@@ -50,19 +72,13 @@ class WelcomeFragment : Fragment() {
     }
 
     private fun setupOnSaleProductsRecyclerView() {
-        // Horizontal layout
         val layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvOnSaleProducts.layoutManager = layoutManager
 
-        // Reuse same PastryAdapter
         val adapter = PastryAdapter(
-            onDetailClick = { pastry ->
-                showPastryDescription(pastry)
-            },
-            //onAddToCartClick = { /* No add to cart in welcome screen */ }
-
+            onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
-                val currentUserId = 1 // replace with actual logged-in user ID
+                val currentUserId = accountViewModel.currentUser.value?.id ?: return@PastryAdapter
                 val cartItem = CartEntity(
                     productId = pastry.id,
                     userId = currentUserId,
@@ -71,39 +87,30 @@ class WelcomeFragment : Fragment() {
                     quantity = 1,
                     imageRes = pastry.imageRes
                 )
-                // Insert into DB
                 viewModel.addToCart(cartItem)
+                Toast.makeText(requireContext(), "Produit ajouté", Toast.LENGTH_SHORT).show()
             }
-
-
         )
+
         binding.rvOnSaleProducts.adapter = adapter
 
-        // Observe ViewModel
         viewModel.pastriesState.observe(viewLifecycleOwner) { state ->
             when (state) {
-                is PastryListState.Loading -> {
-                    // Optionally show a loading indicator
-                }
+                is PastryListState.Loading -> {}
                 is PastryListState.Success -> {
-                    // Convert to DataItem.PastryItem and filter onPromotion
-                    val onSaleItems: List<DataItem> = state.data
-                        .filterIsInstance<DataItem.PastryItem>() // keep only pastry items
-                        .filter { it.pastry.inPromotion }       // only on-sale pastries
+                    val onSaleItems = state.data
+                        .filterIsInstance<DataItem.PastryItem>()
+                        .filter { it.pastry.inPromotion }
                     adapter.submitList(onSaleItems)
                 }
-
-                is PastryListState.Error -> {
-                    // Optionally show error message
-                }
+                is PastryListState.Error -> {}
             }
         }
     }
 
     private fun showPastryDescription(pastry: Pastry) {
-        // Reuse same logic as ProductsFragment to show details
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_pastry_details, null)
-
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_pastry_details, null)
         val dialogImage = dialogView.findViewById<android.widget.ImageView>(R.id.dialog_pastry_image)
         val dialogName = dialogView.findViewById<android.widget.TextView>(R.id.dialog_pastry_name)
         val dialogDescription = dialogView.findViewById<android.widget.TextView>(R.id.dialog_pastry_description)
@@ -116,13 +123,9 @@ class WelcomeFragment : Fragment() {
         val alertDialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .create()
-
         alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        closeButton.setOnClickListener {
-            alertDialog.dismiss()
-        }
-
+        closeButton.setOnClickListener { alertDialog.dismiss() }
         alertDialog.show()
     }
 }

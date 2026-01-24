@@ -27,4 +27,6 @@
     <string name="d_tails">Détails</string>
     <string name="cart">Panier</string>
     <string name="supprimer">Supprimer</string>
+    <string name="accueil">Accueil</string>
+    <string name="ne_ratez_pas_nos_promotions">Ne ratez pas nos promotions !</string>
 </resources>

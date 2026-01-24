@@ -34,6 +34,8 @@ class IntroVideoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.hide()
+
 
         playerView = view.findViewById(R.id.player_view)
 
