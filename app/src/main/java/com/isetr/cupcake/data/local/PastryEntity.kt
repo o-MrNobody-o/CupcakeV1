@@ -1,0 +1,19 @@
+package com.isetr.cupcake.data.local
+
+import androidx.annotation.DrawableRes
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "pastries")
+data class PastryEntity(
+    @PrimaryKey
+    val id: String = "",
+    val name: String = "",
+    val price: Double = 0.0,
+    @DrawableRes val imageRes: Int,
+    val available: Boolean = true,
+    val description: String = "",
+    val inPromotion: Boolean = false,
+    val discountRate: Int = 0,
+    val category: String = ""
+)

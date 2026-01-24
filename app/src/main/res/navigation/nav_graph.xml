@@ -61,6 +61,9 @@
             android:id="@+id/action_welcomeFragment_to_accountFragment"
             app:destination="@id/accountFragment" />
         <action
+            android:id="@+id/action_welcomeFragment_to_cartFragment"
+            app:destination="@id/cartFragment" />
+        <action
             android:id="@+id/action_welcomeFragment_to_authFragment"
             app:destination="@id/authFragment"
             app:popUpTo="@+id/welcomeFragment"
@@ -102,6 +105,6 @@
         app:destination="@id/cartFragment" />
     <action
         android:id="@+id/action_global_welcome"
-        app:destination="@id/welcomeFragment" />s
+        app:destination="@id/welcomeFragment" />
 
 </navigation>

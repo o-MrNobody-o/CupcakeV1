@@ -98,10 +98,11 @@ class WelcomeFragment : Fragment() {
             when (state) {
                 is PastryListState.Loading -> {}
                 is PastryListState.Success -> {
-                    val onSaleItems = state.data
+                    val onSalePastries = state.data
                         .filterIsInstance<DataItem.PastryItem>()
-                        .filter { it.pastry.inPromotion }
-                    adapter.submitList(onSaleItems)
+                        .map { it.pastry }
+                        .filter { it.inPromotion }
+                    adapter.submitList(onSalePastries)
                 }
                 is PastryListState.Error -> {}
             }

@@ -14,12 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
 
-private const val VIEW_TYPE_HEADER = 0
-private const val VIEW_TYPE_PASTRY = 1
-
-class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
-                    private val onAddToCartClick: (Pastry) -> Unit) :
-    ListAdapter<DataItem, RecyclerView.ViewHolder>(PastryDiffCallback) {
+class PastryAdapter(
+    private val onDetailClick: (Pastry) -> Unit,
+    private val onAddToCartClick: (Pastry) -> Unit
+) : ListAdapter<Pastry, PastryAdapter.PastryViewHolder>(PastryDiffCallback) {
 
     class PastryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val pastryImage: ImageView = itemView.findViewById(R.id.pastry_image)
@@ -30,7 +28,7 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
         private val detailButton: Button = itemView.findViewById(R.id.detail_button)
         private val addToCartButton: Button = itemView.findViewById(R.id.add_to_cart_button)
 
-        fun bind(pastry: Pastry, onDetailClick: (Pastry) -> Unit ,onAddToCartClick: (Pastry) -> Unit) {
+        fun bind(pastry: Pastry, onDetailClick: (Pastry) -> Unit, onAddToCartClick: (Pastry) -> Unit) {
             val context = itemView.context
 
             pastryName.text = pastry.name
@@ -47,8 +45,6 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
                 val redColor = ContextCompat.getColor(context, R.color.red)
                 pastryAvailability.setTextColor(redColor)
                 pastryAvailability.compoundDrawableTintList = ColorStateList.valueOf(redColor)
-                // Optionnel : changer l'icône pour une croix
-                // pastryAvailability.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_baseline_cancel_24, 0, 0, 0)
             }
 
             if (pastry.inPromotion && pastry.discountRate > 0) {
@@ -60,53 +56,26 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
 
             detailButton.setOnClickListener { onDetailClick(pastry) }
             addToCartButton.setOnClickListener { onAddToCartClick(pastry) }
-            }
-    }
-
-    class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val categoryName: TextView = itemView.findViewById(R.id.category_name)
-        fun bind(name: String) {
-            categoryName.text = name
         }
     }
 
-    override fun getItemViewType(position: Int): Int {
-        return when (getItem(position)) {
-            is DataItem.HeaderItem -> VIEW_TYPE_HEADER
-            is DataItem.PastryItem -> VIEW_TYPE_PASTRY
-        }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PastryViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.pastry_item, parent, false)
+        return PastryViewHolder(view)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
-            VIEW_TYPE_HEADER -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.category_header_item, parent, false)
-                CategoryViewHolder(view)
-            }
-            VIEW_TYPE_PASTRY -> {
-                val view = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.pastry_item, parent, false)
-                PastryViewHolder(view)
-            }
-            else -> throw IllegalArgumentException("Invalid view type")
-        }
-    }
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = getItem(position)) {
-            is DataItem.HeaderItem -> (holder as CategoryViewHolder).bind(item.categoryName)
-            is DataItem.PastryItem -> (holder as PastryViewHolder).bind(item.pastry, onDetailClick, onAddToCartClick)
-        }
+    override fun onBindViewHolder(holder: PastryViewHolder, position: Int) {
+        holder.bind(getItem(position), onDetailClick, onAddToCartClick)
     }
 }
 
-object PastryDiffCallback : DiffUtil.ItemCallback<DataItem>() {
-    override fun areItemsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {
+object PastryDiffCallback : DiffUtil.ItemCallback<Pastry>() {
+    override fun areItemsTheSame(oldItem: Pastry, newItem: Pastry): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: DataItem, newItem: DataItem): Boolean {
+    override fun areContentsTheSame(oldItem: Pastry, newItem: Pastry): Boolean {
         return oldItem == newItem
     }
 }

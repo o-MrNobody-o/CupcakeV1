@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.isetr.cupcake.R
+import com.isetr.cupcake.ui.products.DataItem
 import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.ui.FooterFragment
@@ -107,7 +108,11 @@ class PastryProductsFragment : Fragment() {
                 is PastryListState.Success -> {
                     progressBar.visibility = View.GONE
                     recyclerView.visibility = View.VISIBLE
-                    pastryAdapter.submitList(state.data)
+                    // Adapter now expects List<Pastry> instead of DataItem
+                    val pastries = state.data
+                        .filterIsInstance<DataItem.PastryItem>()
+                        .map { it.pastry }
+                    pastryAdapter.submitList(pastries)
                     // Mettre à jour les puces de catégorie
                     updateCategoryChips(state.categories)
                 }
