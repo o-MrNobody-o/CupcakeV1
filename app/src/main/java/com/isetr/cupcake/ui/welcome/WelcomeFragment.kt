@@ -1,13 +1,11 @@
 package com.isetr.cupcake.ui.welcome
 
-import android.graphics.Color
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
@@ -47,7 +45,6 @@ class WelcomeFragment : Fragment() {
         accountViewModel = ViewModelProvider(this, AccountViewModel.Factory(requireActivity().application))
             .get(AccountViewModel::class.java)
 
-        // Identifier l'utilisateur connecté
         accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 currentUserId = user.id
@@ -89,7 +86,8 @@ class WelcomeFragment : Fragment() {
                         imageRes = pastry.imageRes
                     )
                     viewModel.addToCart(cartItem)
-                    showAddToCartDialog(pastry.name)
+                    // REMPLACEMENT ALERT PAR TOAST
+                    Toast.makeText(requireContext(), "${pastry.name} ajouté au panier", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -118,17 +116,5 @@ class WelcomeFragment : Fragment() {
         alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         closeButton.setOnClickListener { alertDialog.dismiss() }
         alertDialog.show()
-    }
-
-    private fun showAddToCartDialog(productName: String) {
-        val title = SpannableString("Succès !")
-        title.setSpan(ForegroundColorSpan(Color.parseColor("#E91E63")), 0, title.length, 0)
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage("$productName ajouté au panier.")
-            .setPositiveButton("OK") { d, _ -> d.dismiss() }
-            .show()
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
     }
 }

@@ -53,7 +53,6 @@ class PastryProductsFragment : Fragment() {
         accountViewModel = ViewModelProvider(this, AccountViewModel.Factory(requireActivity().application))
             .get(AccountViewModel::class.java)
 
-        // Identifier l'utilisateur connecté pour le panier
         accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 currentUserId = user.id
@@ -91,9 +90,10 @@ class PastryProductsFragment : Fragment() {
                         imageRes = pastry.imageRes
                     )
                     viewModel.addToCart(cartItem)
-                    showAddToCartDialog(pastry.name)
+                    // REMPLACEMENT ALERT PAR TOAST
+                    Toast.makeText(requireContext(), "${pastry.name} ajouté au panier", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(requireContext(), "Veuillez vous connecter pour ajouter au panier", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Veuillez vous connecter", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -169,17 +169,5 @@ class PastryProductsFragment : Fragment() {
         alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         closeButton.setOnClickListener { alertDialog.dismiss() }
         alertDialog.show()
-    }
-
-    private fun showAddToCartDialog(productName: String) {
-        val title = SpannableString("Succès !")
-        title.setSpan(ForegroundColorSpan(Color.parseColor("#E91E63")), 0, title.length, 0)
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage("$productName ajouté au panier.")
-            .setPositiveButton("OK") { d, _ -> d.dismiss() }
-            .show()
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
     }
 }

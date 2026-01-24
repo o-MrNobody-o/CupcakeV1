@@ -50,7 +50,7 @@ class CartFragment : Fragment() {
     private lateinit var accountViewModel: AccountViewModel
     private lateinit var cartAdapter: CartAdapter
 
-    private var currentUserId: Int = -1 // Valeur par défaut invalide
+    private var currentUserId: Int = -1 
     private val TAG = "SessionCoherence"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -60,25 +60,19 @@ class CartFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialisation correcte du ViewModel
         accountViewModel = ViewModelProvider(this, AccountViewModel.Factory(requireActivity().application))
             .get(AccountViewModel::class.java)
 
         initViews(view)
         setupRecyclerView()
 
-        // BLOQUER le checkout tant que l'utilisateur n'est pas authentifié
         btnCheckout.isEnabled = false
 
-        // Observation de la session active
         accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
                 currentUserId = user.id
-                Log.d(TAG, "Utilisateur détecté : ID = $currentUserId")
                 btnCheckout.isEnabled = true
                 cartViewModel.loadCart(currentUserId)
-            } else {
-                Log.e(TAG, "Aucun utilisateur connecté")
             }
         }
         accountViewModel.loadCurrentUser()
@@ -136,16 +130,10 @@ class CartFragment : Fragment() {
     }
 
     private fun processPayment() {
-        if (currentUserId <= 0) {
-            Toast.makeText(requireContext(), "Veuillez vous reconnecter", Toast.LENGTH_LONG).show()
-            return
-        }
+        if (currentUserId <= 0) return
 
         val items = cartViewModel.cartItems.value
-        if (items.isNullOrEmpty()) {
-            Toast.makeText(requireContext(), "Votre panier est vide", Toast.LENGTH_SHORT).show()
-            return
-        }
+        if (items.isNullOrEmpty()) return
 
         val address = etShippingAddress.text.toString().trim()
         if (address.isEmpty()) {
@@ -156,14 +144,7 @@ class CartFragment : Fragment() {
         val subtotal = items.sumOf { it.price * it.quantity }
         val total = subtotal + (if (subtotal > 20.0) 0.0 else 5.0)
 
-        // Enregistrement avec l'ID RÉEL de la session
-        cartViewModel.checkout(
-            userId = currentUserId,
-            total = total,
-            paymentMethod = if (tilCardNumber.visibility == View.VISIBLE) "Carte" else "Espèces",
-            cardNumber = etCardNumber.text.toString(),
-            shippingAddress = address
-        )
+        cartViewModel.checkout(currentUserId, total, if (tilCardNumber.visibility == View.VISIBLE) "Carte" else "Espèces", etCardNumber.text.toString(), address)
     }
 
     private fun observeCart() {
@@ -183,19 +164,35 @@ class CartFragment : Fragment() {
             if (state is OrderState.Success) {
                 showOrderConfirmationDialog()
                 cartViewModel.resetOrderState()
-            } else if (state is OrderState.Error) {
-                Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun showOrderConfirmationDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Succès !")
-            .setMessage("Votre commande a bien été enregistrée.")
-            .setPositiveButton("Suivre") { _, _ -> startActivity(Intent(requireContext(), OrderStatusActivity::class.java)) }
-            .setNegativeButton("Retour") { _, _ -> findNavController().navigate(R.id.welcomeFragment) }
+        val title = SpannableString("Commande Réussie !")
+        title.setSpan(ForegroundColorSpan(Color.parseColor("#E91E63")), 0, title.length, 0)
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage("Merci pour votre confiance ! Votre commande a été enregistrée avec succès.")
+            .setIcon(R.drawable.ic_baseline_check_circle_24)
+            .setPositiveButton("Suivre ma commande") { _, _ -> 
+                startActivity(Intent(requireContext(), OrderStatusActivity::class.java))
+            }
+            .setNegativeButton("Retour") { _, _ -> 
+                findNavController().navigate(R.id.welcomeFragment) 
+            }
             .setCancelable(false)
-            .show()
+            .create()
+
+        alertDialog.show()
+
+        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
+        val messageView = alertDialog.findViewById<TextView>(android.R.id.message)
+        messageView?.setTextColor(Color.BLACK)
+        messageView?.textSize = 16f
+        
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY)
     }
 }
