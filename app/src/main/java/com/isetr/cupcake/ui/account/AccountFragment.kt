@@ -22,6 +22,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.UserEntity
 import com.isetr.cupcake.databinding.ActivityAccountBinding
+import com.isetr.cupcake.utils.PasswordUtil
 import com.isetr.cupcake.viewmodel.AccountViewModel
 import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.ui.order.OrderStatusActivity
@@ -85,8 +86,12 @@ class AccountFragment : Fragment() {
 
         // Listener pour l'historique des commandes
         binding.btnOrderHistory.setOnClickListener {
-            val intent = Intent(requireContext(), OrderHistoryActivity::class.java)
-            startActivity(intent)
+            val user = viewModel.currentUser.value
+            if (user != null) {
+                val intent = Intent(requireContext(), OrderHistoryActivity::class.java)
+                intent.putExtra("USER_ID", user.id) // On passe l'ID de l'utilisateur actuel
+                startActivity(intent)
+            }
         }
 
         binding.btnDeleteAccount.setOnClickListener {
@@ -94,8 +99,10 @@ class AccountFragment : Fragment() {
         }
 
         binding.btnLogout.setOnClickListener {
-            viewModel.logout()
-            findNavController().navigate(R.id.action_accountFragment_to_authFragment)
+            // CORRECTION : Appel de logout avec callback pour naviguer après déconnexion Room
+            viewModel.logout {
+                findNavController().navigate(R.id.action_accountFragment_to_authFragment)
+            }
         }
         
         if (savedInstanceState == null) {
@@ -145,7 +152,8 @@ class AccountFragment : Fragment() {
             .setPositiveButton("Supprimer") { _, _ ->
                 val enteredPassword = passwordInput.text.toString()
                 val currentUser = viewModel.currentUser.value
-                if (currentUser != null && currentUser.password == enteredPassword) {
+                // Correction : Utiliser PasswordUtil.verify car le mot de passe est haché en base
+                if (currentUser != null && PasswordUtil.verify(enteredPassword, currentUser.password)) {
                     viewModel.deleteAccount {
                         findNavController().navigate(R.id.action_accountFragment_to_authFragment)
                     }

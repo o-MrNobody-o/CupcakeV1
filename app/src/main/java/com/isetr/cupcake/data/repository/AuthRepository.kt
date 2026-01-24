@@ -11,25 +11,39 @@ class AuthRepository(context: Context) {
     suspend fun registerUser(user: UserEntity): Boolean {
         val existing = userDao.getUserByEmail(user.email)
         return if (existing == null) {
+            // S'assurer qu'aucun autre utilisateur n'est connecté avant d'en créer un nouveau actif
+            userDao.logoutAllUsers()
+            user.isLoggedIn = true
             userDao.insertUser(user)
             true
         } else false
     }
-    // New method: get user by email only
+
     suspend fun getUserByEmail(email: String): UserEntity? {
         return userDao.getUserByEmail(email)
     }
-    // Get current user (Room cache)
+
+    // Récupérer l'utilisateur réellement connecté (Session active)
     suspend fun getCurrentUser(): UserEntity? {
-        return userDao.getLastUser()
+        return userDao.getActiveUser()
     }
-    // Update user info
+
+    // Mettre à jour l'utilisateur et gérer sa session
+    suspend fun loginUser(user: UserEntity) {
+        userDao.logoutAllUsers() // Déconnecter tout le monde
+        user.isLoggedIn = true   // Connecter cet utilisateur
+        userDao.updateUser(user)
+    }
+
     suspend fun updateUser(user: UserEntity) {
         userDao.updateUser(user)
     }
 
-    // Delete user
     suspend fun deleteUser(user: UserEntity) {
         userDao.deleteUser(user)
+    }
+
+    suspend fun logout() {
+        userDao.logoutAllUsers()
     }
 }

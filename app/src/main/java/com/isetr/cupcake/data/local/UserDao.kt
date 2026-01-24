@@ -5,23 +5,23 @@ import androidx.room.*
 @Dao
 interface UserDao {
 
-    // Insert a new user
     @Insert
     suspend fun insertUser(user: UserEntity)
 
-    // Get user by email (for login verification)
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
 
-    // Get the last inserted user (current user session)
-    @Query("SELECT * FROM users ORDER BY id DESC LIMIT 1")
-    suspend fun getLastUser(): UserEntity?
+    // Récupérer l'utilisateur qui a sa session active
+    @Query("SELECT * FROM users WHERE isLoggedIn = 1 LIMIT 1")
+    suspend fun getActiveUser(): UserEntity?
 
-    // Update user info
+    // Mettre fin à toutes les sessions actives (déconnexion globale)
+    @Query("UPDATE users SET isLoggedIn = 0")
+    suspend fun logoutAllUsers()
+
     @Update
     suspend fun updateUser(user: UserEntity)
 
-    // Delete user
     @Delete
     suspend fun deleteUser(user: UserEntity)
 }

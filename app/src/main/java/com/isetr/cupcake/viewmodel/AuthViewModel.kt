@@ -32,9 +32,11 @@ class AuthViewModel(context: Context) : ViewModel() {
         _loading.value = true
         viewModelScope.launch {
             try {
-                val user = repository.getUserByEmail(email) // get by email only
+                val user = repository.getUserByEmail(email)
 
                 if (user != null && PasswordUtil.verify(password, user.password)) {
+                    // Marquer cet utilisateur comme ACTIF dans Room
+                    repository.loginUser(user)
                     _currentUser.value = user
                     _success.value = true
                 } else {
@@ -78,7 +80,7 @@ class AuthViewModel(context: Context) : ViewModel() {
         _loading.value = true
         viewModelScope.launch {
             try {
-                val hashedPassword = PasswordUtil.hash(password) // <-- hash here
+                val hashedPassword = PasswordUtil.hash(password)
 
                 val user = UserEntity(
                     nom = nom,
@@ -88,10 +90,16 @@ class AuthViewModel(context: Context) : ViewModel() {
                     telephone = telephone,
                     password = hashedPassword
                 )
-                repository.registerUser(user)
-
-                _currentUser.value = user
-                _success.value = true
+                
+                // registerUser gère déjà la session active en interne
+                if (repository.registerUser(user)) {
+                    // On récupère l'utilisateur avec son ID généré pour la session
+                    val registeredUser = repository.getUserByEmail(email)
+                    _currentUser.value = registeredUser
+                    _success.value = true
+                } else {
+                    _error.value = "Email already exists"
+                }
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {

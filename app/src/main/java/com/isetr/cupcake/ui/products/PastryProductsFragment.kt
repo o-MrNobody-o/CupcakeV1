@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
@@ -23,12 +24,15 @@ import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.local.Pastry
 import com.isetr.cupcake.ui.FooterFragment
+import com.isetr.cupcake.viewmodel.AccountViewModel
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
 class PastryProductsFragment : Fragment() {
 
     private val viewModel: PastryProductsViewModel by viewModels()
+    private lateinit var accountViewModel: AccountViewModel
+    private var currentUserId: Int = -1
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
@@ -46,6 +50,17 @@ class PastryProductsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        accountViewModel = ViewModelProvider(this, AccountViewModel.Factory(requireActivity().application))
+            .get(AccountViewModel::class.java)
+
+        // Identifier l'utilisateur connecté pour le panier
+        accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                currentUserId = user.id
+            }
+        }
+        accountViewModel.loadCurrentUser()
+
         progressBar = view.findViewById(R.id.progress_bar)
         recyclerView = view.findViewById(R.id.pastry_recycler_view)
         searchView = view.findViewById(R.id.search_view)
@@ -60,32 +75,31 @@ class PastryProductsFragment : Fragment() {
                 .replace(R.id.footer_container, FooterFragment())
                 .commit()
         }
-
     }
 
     private fun setupRecyclerView() {
         pastryAdapter = PastryAdapter(
             onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
-                val currentUserId = 1 // replace with actual logged-in user ID
-                val cartItem = CartEntity(
-                    productId = pastry.id,
-                    userId = currentUserId,
-                    name = pastry.name,
-                    price = pastry.price,
-                    quantity = 1,
-                    imageRes = pastry.imageRes
-                )
-                // Insert into DB
-                viewModel.addToCart(cartItem)
-                // Show confirmation dialog
-                showAddToCartDialog(pastry.name)
+                if (currentUserId > 0) {
+                    val cartItem = CartEntity(
+                        productId = pastry.id,
+                        userId = currentUserId,
+                        name = pastry.name,
+                        price = pastry.price,
+                        quantity = 1,
+                        imageRes = pastry.imageRes
+                    )
+                    viewModel.addToCart(cartItem)
+                    showAddToCartDialog(pastry.name)
+                } else {
+                    Toast.makeText(requireContext(), "Veuillez vous connecter pour ajouter au panier", Toast.LENGTH_SHORT).show()
+                }
             }
         )
         recyclerView.adapter = pastryAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
     }
-
 
     private fun setupSearchView() {
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
@@ -93,7 +107,6 @@ class PastryProductsFragment : Fragment() {
                 viewModel.setSearchQuery(query.orEmpty())
                 return false
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 viewModel.setSearchQuery(newText.orEmpty())
                 return true
@@ -112,12 +125,10 @@ class PastryProductsFragment : Fragment() {
                     progressBar.visibility = View.GONE
                     recyclerView.visibility = View.VISIBLE
                     pastryAdapter.submitList(state.data)
-                    // Mettre à jour les puces de catégorie
                     updateCategoryChips(state.categories)
                 }
                 is PastryListState.Error -> {
                     progressBar.visibility = View.GONE
-                    recyclerView.visibility = View.GONE
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                 }
             }
@@ -125,21 +136,14 @@ class PastryProductsFragment : Fragment() {
     }
 
     private fun updateCategoryChips(categories: List<String>) {
-        // Ne met à jour les puces que si elles n'ont pas déjà été créées
         if (categoryChipGroup.childCount > 0) return
-
         categories.forEach { category ->
             val chip = Chip(requireContext())
             chip.text = category
             chip.isCheckable = true
             categoryChipGroup.addView(chip)
-
-            // Pré-cocher la puce "Toutes"
-            if (category == "Toutes") {
-                chip.isChecked = true
-            }
+            if (category == "Toutes") chip.isChecked = true
         }
-
         categoryChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
             if (checkedIds.isNotEmpty()) {
                 val chip = group.findViewById<Chip>(checkedIds[0])
@@ -152,7 +156,6 @@ class PastryProductsFragment : Fragment() {
 
     private fun showPastryDescription(pastry: Pastry) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_pastry_details, null)
-
         val dialogImage = dialogView.findViewById<ImageView>(R.id.dialog_pastry_image)
         val dialogName = dialogView.findViewById<TextView>(R.id.dialog_pastry_name)
         val dialogDescription = dialogView.findViewById<TextView>(R.id.dialog_pastry_description)
@@ -162,45 +165,21 @@ class PastryProductsFragment : Fragment() {
         dialogName.text = pastry.name
         dialogDescription.text = pastry.description
 
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .create()
-
+        val alertDialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
         alertDialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        closeButton.setOnClickListener {
-            alertDialog.dismiss()
-        }
-
+        closeButton.setOnClickListener { alertDialog.dismiss() }
         alertDialog.show()
     }
 
     private fun showAddToCartDialog(productName: String) {
         val title = SpannableString("Succès !")
-        title.setSpan(
-            ForegroundColorSpan(Color.parseColor("#E91E63")),
-            0,
-            title.length,
-            0
-        )
-
+        title.setSpan(ForegroundColorSpan(Color.parseColor("#E91E63")), 0, title.length, 0)
         val alertDialog = AlertDialog.Builder(requireContext())
             .setTitle(title)
-            .setMessage("$productName a été ajouté au panier avec succès.")
-            .setPositiveButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .create()
-
-        alertDialog.show()
-
-        // Background color to white
+            .setMessage("$productName ajouté au panier.")
+            .setPositiveButton("OK") { d, _ -> d.dismiss() }
+            .show()
         alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        
-        // Message text color to black
-        alertDialog.findViewById<TextView>(android.R.id.message)?.setTextColor(Color.BLACK)
-        
-        // Button color to pink
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
     }
 }

@@ -7,6 +7,7 @@ import com.isetr.cupcake.data.local.OrderEntity
 class OrderRepository(context: Context) {
     private val database = AppDatabase.getInstance(context)
     private val orderDao = database.orderDao()
+    private val userDao = database.userDao()
 
     suspend fun placeOrder(order: OrderEntity): Long {
         return try {
@@ -16,8 +17,28 @@ class OrderRepository(context: Context) {
         }
     }
 
-    suspend fun getLastOrder(userId: Int): OrderEntity? {
-        return orderDao.getLastOrderByUser(userId)
+    /**
+     * Récupère la dernière commande de l'utilisateur actuellement connecté.
+     */
+    suspend fun getLastOrderForActiveSession(): OrderEntity? {
+        val activeUser = userDao.getActiveUser()
+        return if (activeUser != null) {
+            orderDao.getLastOrderByUser(activeUser.id)
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Récupère toutes les commandes de l'utilisateur actuellement connecté.
+     */
+    suspend fun getOrdersForActiveSession(): List<OrderEntity> {
+        val activeUser = userDao.getActiveUser()
+        return if (activeUser != null) {
+            orderDao.getAllOrdersByUser(activeUser.id)
+        } else {
+            emptyList()
+        }
     }
 
     suspend fun getAllOrders(userId: Int): List<OrderEntity> {

@@ -81,8 +81,8 @@ class OrderStatusActivity : AppCompatActivity() {
 
     private fun loadLastOrder() {
         lifecycleScope.launch(Dispatchers.IO) {
-            // Simulation : On récupère la dernière commande de l'utilisateur (ID 1 par défaut)
-            val order = orderRepository.getLastOrder(1)
+            // CORRECTION : Utilisation de la nouvelle méthode sécurisée qui identifie la session
+            val order = orderRepository.getLastOrderForActiveSession()
             withContext(Dispatchers.Main) {
                 if (order == null) {
                     tvCurrentStatus.text = "Aucune commande trouvée"
@@ -109,9 +109,8 @@ class OrderStatusActivity : AppCompatActivity() {
             val updatedOrder = order.copy(status = newStatus)
             currentOrder = updatedOrder // Mise à jour locale immédiate
             
-            // Mise à jour de l'UI immédiate pour la réactivité (approche senior)
+            // Mise à jour de l'UI immédiate pour la réactivité
             displayStatus(newStatus)
-            Toast.makeText(this, "Nouveau statut : $newStatus", Toast.LENGTH_SHORT).show()
             
             lifecycleScope.launch(Dispatchers.IO) {
                 // Sauvegarde asynchrone en base de données

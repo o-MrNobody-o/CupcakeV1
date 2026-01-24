@@ -11,5 +11,6 @@ data class UserEntity(
     var email: String,
     var adresse: String,
     var telephone: String,
-    var password: String
+    var password: String,
+    var isLoggedIn: Boolean = false // Nouveau champ pour gérer la session
 )
