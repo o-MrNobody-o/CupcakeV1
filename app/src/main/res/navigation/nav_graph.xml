@@ -5,6 +5,13 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/authFragment">
 
+    <!-- Orders Fragment -->
+    <fragment
+        android:id="@+id/ordersFragment"
+        android:name="com.isetr.cupcake.ui.orders.OrdersFragment"
+        android:label="Orders"
+        tools:layout="@layout/fragment_orders" />
+
     <!-- Auth Fragment -->
     <fragment
         android:id="@+id/authFragment"
@@ -29,12 +36,8 @@
         android:name="com.isetr.cupcake.ui.intro.IntroVideoFragment"
         android:label="Intro Video"
         tools:layout="@layout/fragment_intro_video">
-        <argument
-            android:name="nom"
-            app:argType="string" />
-        <argument
-            android:name="prenom"
-            app:argType="string" />
+        <argument android:name="nom" app:argType="string" />
+        <argument android:name="prenom" app:argType="string" />
         <action
             android:id="@+id/action_introVideoFragment_to_welcomeFragment"
             app:destination="@id/welcomeFragment"
@@ -48,12 +51,8 @@
         android:name="com.isetr.cupcake.ui.welcome.WelcomeFragment"
         android:label="@string/welcome"
         tools:layout="@layout/activity_welcome">
-        <argument
-            android:name="nom"
-            app:argType="string" />
-        <argument
-            android:name="prenom"
-            app:argType="string" />
+        <argument android:name="nom" app:argType="string" />
+        <argument android:name="prenom" app:argType="string" />
         <action
             android:id="@+id/action_welcomeFragment_to_pastryProductsFragment"
             app:destination="@id/pastryProductsFragment" />
@@ -78,6 +77,9 @@
             app:destination="@id/authFragment"
             app:popUpTo="@+id/welcomeFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_accountFragment_to_ordersFragment"
+            app:destination="@id/ordersFragment" />
     </fragment>
 
     <!-- Pastry Products Fragment -->
@@ -87,15 +89,13 @@
         android:label="@string/pastryProdcut"
         tools:layout="@layout/activity_pastry_prodcuts" />
 
-    <!-- Global Actions for Footer Navigation -->
+    <!-- Global Actions (properly defined as <navigation> children) -->
     <action
         android:id="@+id/action_global_pastryProducts"
         app:destination="@id/pastryProductsFragment" />
-
     <action
         android:id="@+id/action_global_account"
         app:destination="@id/accountFragment" />
-
     <action
         android:id="@+id/action_global_cart"
         app:destination="@id/cartFragment" />

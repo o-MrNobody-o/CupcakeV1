@@ -25,5 +25,6 @@
     <string name="Panier">Panier</string>
     <string name="ajouter_au_panier">Ajouter au panier</string>
     <string name="d_tails">Détails</string>
-    <string name="cart">cart</string>
+    <string name="cart">Panier</string>
+    <string name="supprimer">Supprimer</string>
 </resources>

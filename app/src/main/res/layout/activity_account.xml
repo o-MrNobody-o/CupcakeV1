@@ -130,6 +130,16 @@
                     android:backgroundTint="@color/cupcake_pink"
                     android:layout_marginTop="12dp"/>
 
+                <!-- Orders button -->
+                <Button
+                    android:id="@+id/btnOrders"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Mes commandes"
+                    android:textColor="@color/white"
+                    android:backgroundTint="@color/cupcake_pink"
+                    android:layout_marginTop="12dp"/>
+
             </LinearLayout>
         </ScrollView>
 

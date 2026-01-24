@@ -77,6 +77,12 @@ class AccountFragment : Fragment() {
             viewModel.logout()
             findNavController().navigate(R.id.action_accountFragment_to_authFragment)
         }
+
+        binding.btnOrders.setOnClickListener {
+            // Navigate to OrdersFragment
+            findNavController().navigate(R.id.action_accountFragment_to_ordersFragment)
+        }
+
         if (savedInstanceState == null) {
             childFragmentManager.beginTransaction()
                 .replace(R.id.footer_container, FooterFragment())
