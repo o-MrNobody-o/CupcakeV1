@@ -85,7 +85,7 @@ class WelcomeFragment : Fragment() {
                     name = pastry.name,
                     price = pastry.price,
                     quantity = 1,
-                    imageRes = pastry.imageRes
+                    imageUrl = pastry.imageUrl
                 )
                 viewModel.addToCart(cartItem)
                 Toast.makeText(requireContext(), "Produit ajouté", Toast.LENGTH_SHORT).show()
@@ -117,7 +117,11 @@ class WelcomeFragment : Fragment() {
         val dialogDescription = dialogView.findViewById<android.widget.TextView>(R.id.dialog_pastry_description)
         val closeButton = dialogView.findViewById<android.widget.Button>(R.id.dialog_close_button)
 
-        dialogImage.setImageResource(pastry.imageRes)
+        com.bumptech.glide.Glide.with(requireContext())
+            .load(pastry.imageUrl)
+            .placeholder(R.drawable.ic_launcher_foreground)
+            .error(R.drawable.ic_launcher_foreground)
+            .into(dialogImage)
         dialogName.text = pastry.name
         dialogDescription.text = pastry.description
 

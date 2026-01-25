@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
     alias(libs.plugins.safe.args)
@@ -77,4 +78,12 @@ dependencies {
     implementation(libs.exoplayer)
 
     implementation("org.mindrot:jbcrypt:0.4")
+
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
+// optional for logging
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:glide:4.15.1")
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
 }

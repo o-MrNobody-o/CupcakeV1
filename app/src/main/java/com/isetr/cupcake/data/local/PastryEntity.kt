@@ -1,6 +1,5 @@
 package com.isetr.cupcake.data.local
 
-import androidx.annotation.DrawableRes
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -10,7 +9,7 @@ data class PastryEntity(
     val id: String = "",
     val name: String = "",
     val price: Double = 0.0,
-    @DrawableRes val imageRes: Int,
+    val imageUrl: String = "",
     val available: Boolean = true,
     val description: String = "",
     val inPromotion: Boolean = false,

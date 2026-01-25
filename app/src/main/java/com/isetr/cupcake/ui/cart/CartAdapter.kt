@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.CartEntity
 
@@ -41,8 +42,12 @@ class CartAdapter(
                 onRemoveItem(item)
             }
 
-            // Optional: Load image resource if available
-             ivImage.setImageResource(item.imageRes)
+            // Load image from URL using Glide
+            Glide.with(itemView.context)
+                .load(item.imageUrl)
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(ivImage)
         }
     }
 

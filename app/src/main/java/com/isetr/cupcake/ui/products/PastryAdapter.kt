@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.model.Pastry
 
@@ -33,7 +34,14 @@ class PastryAdapter(
 
             pastryName.text = pastry.name
             pastryPrice.text = "${pastry.price} TND"
-            pastryImage.setImageResource(pastry.imageRes)
+            
+            // Load image from URL using Glide; fall back to placeholder when blank
+            val imageUrl = pastry.imageUrl.takeIf { it.isNotBlank() }
+            Glide.with(context)
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_launcher_foreground)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(pastryImage)
 
             if (pastry.available) {
                 pastryAvailability.text = "Disponible"

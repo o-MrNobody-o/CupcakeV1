@@ -72,7 +72,7 @@ class PastryProductsFragment : Fragment() {
                     name = pastry.name,
                     price = pastry.price,
                     quantity = 1,
-                    imageRes = pastry.imageRes
+                    imageUrl = pastry.imageUrl
                 )
                 // Insert into DB
                 viewModel.addToCart(cartItem)
@@ -159,7 +159,11 @@ class PastryProductsFragment : Fragment() {
         val dialogDescription = dialogView.findViewById<TextView>(R.id.dialog_pastry_description)
         val closeButton = dialogView.findViewById<Button>(R.id.dialog_close_button)
 
-        dialogImage.setImageResource(pastry.imageRes)
+        com.bumptech.glide.Glide.with(requireContext())
+            .load(pastry.imageUrl)
+            .placeholder(R.drawable.ic_launcher_foreground)
+            .error(R.drawable.ic_launcher_foreground)
+            .into(dialogImage)
         dialogName.text = pastry.name
         dialogDescription.text = pastry.description
 
