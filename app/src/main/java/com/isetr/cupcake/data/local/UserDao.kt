@@ -5,17 +5,16 @@ import androidx.room.*
 @Dao
 interface UserDao {
 
-    @Insert
+    // CORRECTION : On remplace l'ancien utilisateur s'il a le même ID (on Conflict Replace)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
 
     @Query("SELECT * FROM users WHERE email = :email LIMIT 1")
     suspend fun getUserByEmail(email: String): UserEntity?
 
-    // Récupérer l'utilisateur qui a sa session active
     @Query("SELECT * FROM users WHERE isLoggedIn = 1 LIMIT 1")
     suspend fun getActiveUser(): UserEntity?
 
-    // Mettre fin à toutes les sessions actives (déconnexion globale)
     @Query("UPDATE users SET isLoggedIn = 0")
     suspend fun logoutAllUsers()
 

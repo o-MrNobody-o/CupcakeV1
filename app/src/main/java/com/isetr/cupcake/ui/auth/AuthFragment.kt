@@ -31,16 +31,13 @@ class AuthFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Setup ViewModel
         viewModel = ViewModelProvider(
             this,
             AuthViewModelFactory(requireActivity().applicationContext)
         )[AuthViewModel::class.java]
 
-        // Observe ViewModel LiveData
         observeViewModel()
 
-        // Navigation: Login <-> Register
         binding.tvGoRegister.setOnClickListener {
             binding.layoutLogin.animate().alpha(0f).setDuration(300).withEndAction {
                 binding.layoutLogin.visibility = View.GONE
@@ -59,7 +56,6 @@ class AuthFragment : Fragment() {
             }.start()
         }
 
-        // Show / hide password
         binding.cbShowPassword.setOnCheckedChangeListener { _, isChecked ->
             val type = if (isChecked)
                 InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
@@ -68,19 +64,16 @@ class AuthFragment : Fragment() {
 
             binding.etRegPassword.inputType = type
             binding.etRegConfirmPassword.inputType = type
-
             binding.etRegPassword.setSelection(binding.etRegPassword.text.length)
             binding.etRegConfirmPassword.setSelection(binding.etRegConfirmPassword.text.length)
         }
 
-        // Login button
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString()
             val password = binding.etPassword.text.toString()
             viewModel.onLoginClicked(email, password)
         }
 
-        // Register button
         binding.btnRegister.setOnClickListener {
             val nom = binding.etRegNom.text.toString()
             val prenom = binding.etRegPrenom.text.toString()
@@ -90,36 +83,32 @@ class AuthFragment : Fragment() {
             val password = binding.etRegPassword.text.toString()
             val confirmPassword = binding.etRegConfirmPassword.text.toString()
 
+            // CORRECTION : Utilisation de 'passwordEntered' au lieu de 'password'
             viewModel.onRegisterClicked(
                 nom = nom,
                 prenom = prenom,
                 email = email,
                 adresse = adresse,
                 telephone = telephone,
-                password = password,
+                passwordEntered = password, 
                 confirmPassword = confirmPassword
             )
         }
     }
 
-    // LiveData Observers
     private fun observeViewModel() {
-        // Show loading (optional: you can add a ProgressBar later)
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
-            // For now, just disable buttons while loading
             binding.btnLogin.isEnabled = !isLoading
             binding.btnRegister.isEnabled = !isLoading
         }
 
-        // Show error messages as Toast
         viewModel.error.observe(viewLifecycleOwner) { errorMsg ->
             errorMsg?.let {
                 Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                viewModel.clearError() // Clear after showing
+                viewModel.clearError()
             }
         }
 
-        // Success observer
         viewModel.success.observe(viewLifecycleOwner) { isSuccess ->
             if (isSuccess) {
                 viewModel.currentUser.value?.let { user ->

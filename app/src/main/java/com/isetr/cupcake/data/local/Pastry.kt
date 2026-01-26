@@ -10,6 +10,7 @@ data class Pastry(
     val name: String,
     val price: Double,
     @DrawableRes val imageRes: Int,
+    val imageUrl: String? = null, // AJOUTÉ : Pour les images distantes (Express)
     val available: Boolean = true,
     val description: String,
     val inPromotion: Boolean = false,

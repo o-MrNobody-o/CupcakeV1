@@ -4,9 +4,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    private const val BASE_URL = "https://votre-api-exemple.com/"
+    // Port 3000 pour Express et votre IP actuelle 10.191.254.121
+    private const val BASE_URL = "http://10.191.254.121:3000/" 
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -14,6 +16,8 @@ object RetrofitClient {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(logging)
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
         .build()
 
     val api: ApiService by lazy {

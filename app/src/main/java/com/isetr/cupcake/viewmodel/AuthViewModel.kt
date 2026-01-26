@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.lifecycle.*
 import com.isetr.cupcake.data.repository.AuthRepository
 import com.isetr.cupcake.data.local.UserEntity
-import com.isetr.cupcake.utils.PasswordUtil
 import kotlinx.coroutines.launch
 
 class AuthViewModel(context: Context) : ViewModel() {
@@ -22,93 +21,72 @@ class AuthViewModel(context: Context) : ViewModel() {
     private val _currentUser = MutableLiveData<UserEntity?>()
     val currentUser: LiveData<UserEntity?> = _currentUser
 
-    // Login
-    fun onLoginClicked(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
-            _error.value = "Please enter email and password"
+    fun onLoginClicked(email: String, passwordEntered: String) {
+        if (email.isBlank() || passwordEntered.isBlank()) {
+            _error.value = "Veuillez remplir tous les champs"
             return
         }
 
         _loading.value = true
         viewModelScope.launch {
             try {
-                val user = repository.getUserByEmail(email)
+                // On envoie le mot de passe tel quel, Express s'occupe de la comparaison BCrypt
+                val user = repository.loginRemote(email, passwordEntered)
 
-                if (user != null && PasswordUtil.verify(password, user.password)) {
-                    // Marquer cet utilisateur comme ACTIF dans Room
-                    repository.loginUser(user)
+                if (user != null) {
                     _currentUser.value = user
                     _success.value = true
                 } else {
-                    _error.value = "Invalid email or password"
+                    _error.value = "Email ou mot de passe incorrect"
                 }
             } catch (e: Exception) {
-                _error.value = e.message
+                _error.value = "Erreur de connexion : ${e.localizedMessage}"
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    // Register
     fun onRegisterClicked(
-        nom: String,
-        prenom: String,
-        email: String,
-        adresse: String,
-        telephone: String,
-        password: String,
-        confirmPassword: String
+        nom: String, prenom: String, email: String,
+        adresse: String, telephone: String, passwordEntered: String, confirmPassword: String
     ) {
-        if (nom.isBlank() || prenom.isBlank() || email.isBlank() ||
-            adresse.isBlank() || telephone.isBlank() || password.isBlank() || confirmPassword.isBlank()
-        ) {
-            _error.value = "All fields are required"
+        if (nom.isBlank() || prenom.isBlank() || email.isBlank() || passwordEntered.isBlank()) {
+            _error.value = "Tous les champs sont obligatoires"
             return
         }
 
-        if (password != confirmPassword) {
-            _error.value = "Passwords do not match"
-            return
-        }
-
-        if (password.length < 6) {
-            _error.value = "Password must be at least 6 characters"
+        if (passwordEntered != confirmPassword) {
+            _error.value = "Les mots de passe ne correspondent pas"
             return
         }
 
         _loading.value = true
         viewModelScope.launch {
             try {
-                val hashedPassword = PasswordUtil.hash(password)
-
+                // Création de l'entité locale
                 val user = UserEntity(
-                    nom = nom,
-                    prenom = prenom,
-                    email = email,
-                    adresse = adresse,
-                    telephone = telephone,
-                    password = hashedPassword
+                    nom = nom, prenom = prenom, email = email,
+                    adresse = adresse, telephone = telephone, password = passwordEntered
                 )
                 
-                // registerUser gère déjà la session active en interne
-                if (repository.registerUser(user)) {
-                    // On récupère l'utilisateur avec son ID généré pour la session
-                    val registeredUser = repository.getUserByEmail(email)
+                // Envoi du mot de passe en clair au serveur Express
+                val result = repository.registerUser(user, passwordEntered)
+                
+                if (result == "success") {
+                    val registeredUser = repository.getCurrentUser()
                     _currentUser.value = registeredUser
                     _success.value = true
                 } else {
-                    _error.value = "Email already exists"
+                    _error.value = result
                 }
             } catch (e: Exception) {
-                _error.value = e.message
+                _error.value = "Impossible de contacter le serveur Express"
             } finally {
                 _loading.value = false
             }
         }
     }
 
-    fun clearError() {
-        _error.value = null
-    }
+    fun clearError() { _error.value = null }
 }

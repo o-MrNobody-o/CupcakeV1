@@ -1,6 +1,7 @@
 package com.isetr.cupcake.ui.products
 
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.Pastry
 
@@ -35,7 +37,19 @@ class PastryAdapter(private val onDetailClick: (Pastry) -> Unit,
 
             pastryName.text = pastry.name
             pastryPrice.text = "${pastry.price} TND"
-            pastryImage.setImageResource(pastry.imageRes)
+
+            // --- DEBUG LOG POUR LES IMAGES ---
+            Log.d("GlideDebug", "Chargement image pour ${pastry.name}: ${pastry.imageUrl}")
+
+            if (!pastry.imageUrl.isNullOrEmpty()) {
+                Glide.with(context)
+                    .load(pastry.imageUrl)
+                    .placeholder(R.drawable.ic_products)
+                    .error(R.drawable.ic_products)
+                    .into(pastryImage)
+            } else {
+                pastryImage.setImageResource(pastry.imageRes)
+            }
 
             if (pastry.available) {
                 pastryAvailability.text = "Disponible"
