@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
@@ -21,12 +22,31 @@ import com.isetr.cupcake.ui.products.DataItem
 import com.isetr.cupcake.data.local.CartEntity
 import com.isetr.cupcake.data.model.Pastry
 import com.isetr.cupcake.ui.FooterFragment
+import com.isetr.cupcake.viewmodel.AccountViewModel
+import com.isetr.cupcake.viewmodel.AccountViewModelFactory
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
+/**
+ * PastryProductsFragment: Displays all products with add-to-cart functionality.
+ * 
+ * KEY FIX: Now uses reactive AccountViewModel.currentUser to get the correct userId.
+ * 
+ * Previous bug:
+ * - currentUserId was hardcoded to 1
+ * - All products added from this page went to user 1's cart regardless of who was logged in
+ * 
+ * New behavior:
+ * - Gets current user from AccountViewModel (which is reactive to SessionManager)
+ * - When user switches, the next add-to-cart uses the NEW user's ID
+ * - Shows error if no user is logged in
+ */
 class PastryProductsFragment : Fragment() {
 
     private val viewModel: PastryProductsViewModel by viewModels()
+    
+    // KEY FIX: AccountViewModel provides reactive access to current logged-in user
+    private lateinit var accountViewModel: AccountViewModel
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
@@ -49,6 +69,13 @@ class PastryProductsFragment : Fragment() {
         searchView = view.findViewById(R.id.search_view)
         categoryChipGroup = view.findViewById(R.id.category_chip_group)
 
+        // KEY FIX: Initialize AccountViewModel (scoped to activity for consistency across fragments)
+        // This gives us reactive access to the current logged-in user via SessionManager
+        accountViewModel = ViewModelProvider(
+            requireActivity(),
+            AccountViewModelFactory(requireContext())
+        ).get(AccountViewModel::class.java)
+
         setupRecyclerView()
         setupSearchView()
         observeViewModel()
@@ -58,23 +85,42 @@ class PastryProductsFragment : Fragment() {
                 .replace(R.id.footer_container, FooterFragment())
                 .commit()
         }
-
     }
 
     private fun setupRecyclerView() {
         pastryAdapter = PastryAdapter(
             onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
-                val currentUserId = 1 // replace with actual logged-in user ID
+                /**
+                 * KEY FIX: Get current user ID from reactive AccountViewModel
+                 * 
+                 * Previous bug: userId was hardcoded to 1, so all products from
+                 * this page were added to user 1's cart regardless of who was logged in.
+                 * 
+                 * Fix: accountViewModel.currentUser is backed by a Flow that:
+                 * 1. Listens to SessionManager.activeUserIdFlow
+                 * 2. When userId changes (user switches), loads the new user from Room
+                 * 3. currentUser.value always reflects the CURRENT logged-in user
+                 * 
+                 * This ensures products are always added to the correct user's cart.
+                 */
+                val currentUser = accountViewModel.currentUser.value
+                
+                if (currentUser == null) {
+                    // No user logged in - show error and don't add to cart
+                    Toast.makeText(requireContext(), "Veuillez vous connecter d'abord", Toast.LENGTH_SHORT).show()
+                    return@PastryAdapter
+                }
+                
                 val cartItem = CartEntity(
                     productId = pastry.id,
-                    userId = currentUserId,
+                    userId = currentUser.id,  // Now uses the ACTUAL current user's ID
                     name = pastry.name,
                     price = pastry.price,
                     quantity = 1,
                     imageUrl = pastry.imageUrl
                 )
-                // Insert into DB
+                // Insert into DB - will appear in this user's cart
                 viewModel.addToCart(cartItem)
                 Toast.makeText(requireContext(), "Produit ajouté", Toast.LENGTH_SHORT).show()
             }

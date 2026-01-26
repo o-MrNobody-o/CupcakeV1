@@ -18,6 +18,7 @@ import com.isetr.cupcake.R
 import com.isetr.cupcake.data.local.UserEntity
 import com.isetr.cupcake.databinding.ActivityAccountBinding
 import com.isetr.cupcake.viewmodel.AccountViewModel
+import com.isetr.cupcake.viewmodel.AccountViewModelFactory
 import com.isetr.cupcake.ui.FooterFragment
 
 class AccountFragment : Fragment() {
@@ -39,7 +40,7 @@ class AccountFragment : Fragment() {
         (activity as? AppCompatActivity)?.supportActionBar?.hide()
 
 
-        viewModel = ViewModelProvider(this, AccountViewModel.Factory(requireActivity().application))
+        viewModel = ViewModelProvider(this, AccountViewModelFactory(requireContext()))
             .get(AccountViewModel::class.java)
 
         // Observe current user and bind
@@ -106,13 +107,8 @@ class AccountFragment : Fragment() {
             .setView(passwordInput)
             .setPositiveButton("Delete") { _, _ ->
                 val enteredPassword = passwordInput.text.toString()
-                val currentUser = viewModel.currentUser.value
-                if (currentUser != null && currentUser.password == enteredPassword) {
-                    viewModel.deleteAccount {
-                        findNavController().navigate(R.id.action_accountFragment_to_authFragment)
-                    }
-                } else {
-                    Toast.makeText(requireContext(), "Incorrect password", Toast.LENGTH_SHORT).show()
+                viewModel.deleteAccount(enteredPassword) {
+                    findNavController().navigate(R.id.action_accountFragment_to_authFragment)
                 }
             }
             .setNegativeButton("Cancel", null)

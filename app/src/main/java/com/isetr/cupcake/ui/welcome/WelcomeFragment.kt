@@ -18,9 +18,24 @@ import com.isetr.cupcake.ui.FooterFragment
 import com.isetr.cupcake.ui.products.DataItem
 import com.isetr.cupcake.ui.products.PastryAdapter
 import com.isetr.cupcake.viewmodel.AccountViewModel
+import com.isetr.cupcake.viewmodel.AccountViewModelFactory
 import com.isetr.cupcake.viewmodel.PastryListState
 import com.isetr.cupcake.viewmodel.PastryProductsViewModel
 
+/**
+ * WelcomeFragment: Shows welcome message and on-sale products.
+ * 
+ * KEY FIX: Welcome message now updates reactively with session changes.
+ * 
+ * Previous bug:
+ * - Used navigation arguments as primary source for user name
+ * - When user switched, old name showed briefly before update
+ * 
+ * New behavior:
+ * - accountViewModel.currentUser is reactive (Flow-backed)
+ * - When session changes, userName updates instantly
+ * - Navigation arguments are only used as initial value if user isn't loaded yet
+ */
 class WelcomeFragment : Fragment() {
 
     private lateinit var binding: ActivityWelcomeBinding
@@ -40,25 +55,38 @@ class WelcomeFragment : Fragment() {
 
         (activity as? androidx.appcompat.app.AppCompatActivity)?.supportActionBar?.hide()
 
-        // Shared ViewModel for current user
+        // Shared ViewModel for current user - scoped to activity for consistency
         accountViewModel = ViewModelProvider(
             requireActivity(),
-            AccountViewModel.Factory(requireActivity().application)
+            AccountViewModelFactory(requireContext())
         ).get(AccountViewModel::class.java)
 
-        // Observe current user
+        /**
+         * KEY FIX: Observe currentUser which is now REACTIVE.
+         * 
+         * accountViewModel.currentUser is backed by a Flow that:
+         * 1. Listens to SessionManager.activeUserIdFlow
+         * 2. When userId changes, loads the new user from Room
+         * 3. Emits null when no user is logged in
+         * 
+         * This ensures:
+         * - When user X logs out and Y logs in, userName updates instantly to Y
+         * - No stale data from previous user
+         */
         accountViewModel.currentUser.observe(viewLifecycleOwner) { user ->
-            user?.let {
-                binding.userName = "${it.prenom} ${it.nom}"
+            if (user != null) {
+                // Always use the reactive user data as the source of truth
+                binding.userName = "${user.prenom} ${user.nom}"
+            } else {
+                // User logged out - clear the welcome message
+                binding.userName = ""
             }
         }
-
-        // Fallback for first-time nav arguments
-        val nomArg = arguments?.getString("nom")
-        val prenomArg = arguments?.getString("prenom")
-        if (!nomArg.isNullOrEmpty() && !prenomArg.isNullOrEmpty()) {
-            binding.userName = "$prenomArg $nomArg"
-        }
+        
+        // Note: We removed the fallback to navigation arguments because
+        // it was causing stale data to appear briefly. The reactive
+        // currentUser from AccountViewModel is now the single source of truth.
+        // Navigation arguments are no longer needed for the welcome message.
 
         // Setup horizontal RecyclerView for on-sale products
         setupOnSaleProductsRecyclerView()
@@ -78,10 +106,16 @@ class WelcomeFragment : Fragment() {
         val adapter = PastryAdapter(
             onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
-                val currentUserId = accountViewModel.currentUser.value?.id ?: return@PastryAdapter
+                // Use reactive currentUser instead of potentially stale value
+                val currentUser = accountViewModel.currentUser.value
+                if (currentUser == null) {
+                    Toast.makeText(requireContext(), "Please log in first", Toast.LENGTH_SHORT).show()
+                    return@PastryAdapter
+                }
+                
                 val cartItem = CartEntity(
                     productId = pastry.id,
-                    userId = currentUserId,
+                    userId = currentUser.id,
                     name = pastry.name,
                     price = pastry.price,
                     quantity = 1,

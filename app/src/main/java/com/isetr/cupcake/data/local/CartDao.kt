@@ -1,7 +1,15 @@
 package com.isetr.cupcake.data.local
 
 import androidx.room.*
+import kotlinx.coroutines.flow.Flow
 
+/**
+ * CartDao: Data Access Object for cart operations.
+ * 
+ * KEY FIX: Added Flow-based queries that automatically emit new data
+ * when the underlying table changes. This ensures the UI updates
+ * instantly when cart items are added/removed/modified.
+ */
 @Dao
 interface CartDao {
 
@@ -17,9 +25,17 @@ interface CartDao {
     @Delete
     suspend fun deleteCartItem(cartItem: CartEntity)
 
-    // Get all cart items for a specific user
+    // Get all cart items for a specific user (one-shot)
     @Query("SELECT * FROM cart_items WHERE userId = :userId")
     suspend fun getCartItemsForUser(userId: Int): List<CartEntity>
+    
+    /**
+     * REACTIVE: Get all cart items for a specific user as Flow.
+     * This automatically emits new values whenever cart data changes.
+     * Use this in ViewModels for real-time UI updates.
+     */
+    @Query("SELECT * FROM cart_items WHERE userId = :userId")
+    fun getCartItemsForUserFlow(userId: Int): Flow<List<CartEntity>>
 
     // Get a specific cart item by productId and userId
     @Query("SELECT * FROM cart_items WHERE productId = :productId AND userId = :userId")

@@ -5,9 +5,23 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
+/**
+ * AppDatabase: Room database for the Cupcake app.
+ * 
+ * Entities:
+ * - UserEntity: User accounts with hashed passwords
+ * - CartEntity: Shopping cart items (tied to userId)
+ * - OrderEntity: Order history (tied to userId)
+ * - PastryEntity: Cached pastry products
+ * 
+ * Version History:
+ * - v6: Initial stable version
+ * - v7: Added createdAt, updatedAt, isActive to UserEntity
+ *       Added unique index on email
+ */
 @Database(
     entities = [UserEntity::class, CartEntity::class, OrderEntity::class, PastryEntity::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,7 +46,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 "cupcake-db"
             )
-                .fallbackToDestructiveMigration() // optional for dev
+                .fallbackToDestructiveMigration() // For development - clears DB on schema change
                 .build()
     }
 }

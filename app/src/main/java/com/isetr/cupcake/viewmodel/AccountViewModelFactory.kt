@@ -5,25 +5,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 /**
- * Factory for creating AuthViewModel with Context dependency.
+ * Factory for creating AccountViewModel with Context dependency.
  * 
  * Usage:
  * ```
  * val viewModel = ViewModelProvider(
  *     this,
- *     AuthViewModelFactory(requireContext().applicationContext)
- * )[AuthViewModel::class.java]
+ *     AccountViewModelFactory(requireContext().applicationContext)
+ * )[AccountViewModel::class.java]
  * ```
  * 
  * Note: Always use applicationContext to avoid memory leaks.
  */
-class AuthViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
+class AccountViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
     
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
-            modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
-                AuthViewModel(context.applicationContext) as T
+            modelClass.isAssignableFrom(AccountViewModel::class.java) -> {
+                AccountViewModel(context.applicationContext) as T
             }
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
