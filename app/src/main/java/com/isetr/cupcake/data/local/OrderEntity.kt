@@ -12,5 +12,6 @@ data class OrderEntity(
     val cardNumber: String? = null,
     val shippingAddress: String,
     val timestamp: Long = System.currentTimeMillis(),
-    val status: String = "En attente"
+    val status: String = "En attente",
+    val review: String? = null // AJOUTÉ
 )

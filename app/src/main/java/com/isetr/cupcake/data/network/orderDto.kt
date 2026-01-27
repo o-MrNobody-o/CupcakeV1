@@ -10,5 +10,6 @@ data class OrderDto(
     @SerializedName("card_number") val cardNumber: String? = null,
     @SerializedName("shipping_address") val shippingAddress: String,
     @SerializedName("timestamp") val timestamp: Long,
-    @SerializedName("status") val status: String? = "En attente"
+    @SerializedName("status") val status: String? = "En attente",
+    @SerializedName("review") val review: String? = null // AJOUTÉ
 )

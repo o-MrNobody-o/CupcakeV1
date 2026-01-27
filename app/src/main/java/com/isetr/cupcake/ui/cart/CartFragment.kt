@@ -3,9 +3,6 @@ package com.isetr.cupcake.ui.cart
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +24,7 @@ import com.isetr.cupcake.ui.order.OrderStatusActivity
 import com.isetr.cupcake.viewmodel.AccountViewModel
 import com.isetr.cupcake.viewmodel.CartViewModel
 import com.isetr.cupcake.viewmodel.OrderState
+import java.util.Locale
 
 class CartFragment : Fragment() {
 
@@ -43,6 +41,7 @@ class CartFragment : Fragment() {
     private lateinit var etShippingAddress: TextInputEditText
 
     private lateinit var tvSummarySubtotal: TextView
+    private lateinit var tvSummaryAfterDiscount: TextView
     private lateinit var tvSummaryDelivery: TextView
     private lateinit var tvSummaryTotal: TextView
 
@@ -51,7 +50,6 @@ class CartFragment : Fragment() {
     private lateinit var cartAdapter: CartAdapter
 
     private var currentUserId: Int = -1 
-    private val TAG = "SessionCoherence"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_cart, container, false)
@@ -93,7 +91,9 @@ class CartFragment : Fragment() {
         etCardNumber = view.findViewById(R.id.etCardNumber)
         tilShippingAddress = view.findViewById(R.id.tilShippingAddress)
         etShippingAddress = view.findViewById(R.id.etShippingAddress)
+        
         tvSummarySubtotal = view.findViewById(R.id.tvSummarySubtotal)
+        tvSummaryAfterDiscount = view.findViewById(R.id.tvSummaryAfterDiscount)
         tvSummaryDelivery = view.findViewById(R.id.tvSummaryDelivery)
         tvSummaryTotal = view.findViewById(R.id.tvSummaryTotal)
     }
@@ -112,6 +112,12 @@ class CartFragment : Fragment() {
         cardPay.setOnClickListener { updatePaymentUI(cardPay, cardCash, "Card") }
 
         btnCheckout.setOnClickListener {
+            val items = cartViewModel.cartItems.value
+            if (items.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Votre panier est vide !", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             if (paymentSection.visibility == View.GONE) {
                 paymentSection.visibility = View.VISIBLE
                 btnCheckout.text = "Confirmer le paiement"
@@ -127,6 +133,7 @@ class CartFragment : Fragment() {
         unselected.strokeWidth = 2
         unselected.strokeColor = Color.parseColor("#DDDDDD")
         tilCardNumber.visibility = if (method == "Card") View.VISIBLE else View.GONE
+        tilCardNumber.error = null
     }
 
     private fun processPayment() {
@@ -141,58 +148,81 @@ class CartFragment : Fragment() {
             return
         }
 
-        val subtotal = items.sumOf { it.price * it.quantity }
-        val total = subtotal + (if (subtotal > 20.0) 0.0 else 5.0)
+        val isCard = tilCardNumber.visibility == View.VISIBLE
+        val cardNum = etCardNumber.text.toString().trim()
+        if (isCard && cardNum.isEmpty()) {
+            tilCardNumber.error = "Numéro requis"
+            return
+        }
 
-        cartViewModel.checkout(currentUserId, total, if (tilCardNumber.visibility == View.VISIBLE) "Carte" else "Espèces", etCardNumber.text.toString(), address)
+        // Calcul du total final après remise pour l'envoi au serveur
+        val finalSubtotal = items.sumOf { item ->
+            val price = if (item.inPromotion) item.price * (1 - item.discountRate / 100.0) else item.price
+            price * item.quantity
+        }
+        val totalWithDelivery = finalSubtotal + (if (finalSubtotal > 20.0) 0.0 else 5.0)
+
+        cartViewModel.checkout(currentUserId, totalWithDelivery, if (isCard) "Carte" else "Espèces", if (isCard) cardNum else null, address)
     }
 
     private fun observeCart() {
         cartViewModel.cartItems.observe(viewLifecycleOwner) { items ->
             cartAdapter.submitList(items)
-            val subtotal = items.sumOf { it.price * it.quantity }
-            val delivery = if (subtotal > 20.0 || items.isEmpty()) 0.0 else 5.0
-            tvSummarySubtotal.text = "$subtotal TND"
-            tvSummaryDelivery.text = if (delivery == 0.0) "GRATUIT" else "5 TND"
-            tvSummaryTotal.text = "${subtotal + delivery} TND"
-            totalPriceTextView.text = "Total: $subtotal TND"
+            
+            // 1. Total SANS remise (pour le haut de l'écran)
+            val rawSubtotal = items.sumOf { it.price * it.quantity }
+            totalPriceTextView.text = String.format(Locale.US, "Total: %.2f TND", rawSubtotal)
+            tvSummarySubtotal.text = String.format(Locale.US, "%.2f TND", rawSubtotal)
+
+            // 2. Total AVEC remise
+            val discountedSubtotal = items.sumOf { item ->
+                val price = if (item.inPromotion) item.price * (1 - item.discountRate / 100.0) else item.price
+                price * item.quantity
+            }
+            tvSummaryAfterDiscount.text = String.format(Locale.US, "%.2f TND", discountedSubtotal)
+
+            // 3. Frais de livraison (Gratuit si total après remise > 20)
+            val delivery = if (discountedSubtotal > 20.0 || items.isEmpty()) 0.0 else 5.0
+            tvSummaryDelivery.text = if (delivery == 0.0) "GRATUIT" else "5.00 TND"
+
+            // 4. Total Final à payer
+            tvSummaryTotal.text = String.format(Locale.US, "%.2f TND", discountedSubtotal + delivery)
         }
     }
 
     private fun observeOrderState() {
         cartViewModel.orderState.observe(viewLifecycleOwner) { state ->
             if (state is OrderState.Success) {
+                resetCheckoutUI()
                 showOrderConfirmationDialog()
                 cartViewModel.resetOrderState()
             }
         }
     }
 
+    private fun resetCheckoutUI() {
+        paymentSection.visibility = View.GONE
+        btnCheckout.text = "Passer la commande"
+        etCardNumber.setText("")
+        etShippingAddress.setText("")
+        tilCardNumber.visibility = View.GONE
+    }
+
     private fun showOrderConfirmationDialog() {
-        val title = SpannableString("Commande Réussie !")
-        title.setSpan(ForegroundColorSpan(Color.parseColor("#E91E63")), 0, title.length, 0)
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_order_success, null)
+        val dialog = AlertDialog.Builder(requireContext()).setView(dialogView).create()
 
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setTitle(title)
-            .setMessage("Merci pour votre confiance ! Votre commande a été enregistrée avec succès.")
-            .setIcon(R.drawable.ic_baseline_check_circle_24)
-            .setPositiveButton("Suivre ma commande") { _, _ -> 
-                startActivity(Intent(requireContext(), OrderStatusActivity::class.java))
-            }
-            .setNegativeButton("Retour") { _, _ -> 
-                findNavController().navigate(R.id.welcomeFragment) 
-            }
-            .setCancelable(false)
-            .create()
+        dialogView.findViewById<Button>(R.id.btnDialogTrack).setOnClickListener {
+            dialog.dismiss()
+            startActivity(Intent(requireContext(), OrderStatusActivity::class.java))
+        }
 
-        alertDialog.show()
+        dialogView.findViewById<Button>(R.id.btnDialogHome).setOnClickListener {
+            dialog.dismiss()
+            findNavController().navigate(R.id.welcomeFragment)
+        }
 
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        val messageView = alertDialog.findViewById<TextView>(android.R.id.message)
-        messageView?.setTextColor(Color.BLACK)
-        messageView?.textSize = 16f
-        
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.parseColor("#E91E63"))
-        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.GRAY)
+        dialog.show()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
     }
 }

@@ -77,16 +77,18 @@ class WelcomeFragment : Fragment() {
             onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
                 if (currentUserId > 0) {
+                    // --- CORRECTION : AJOUT DES INFOS DE REMISE ---
                     val cartItem = CartEntity(
                         productId = pastry.id,
                         userId = currentUserId,
                         name = pastry.name,
                         price = pastry.price,
                         quantity = 1,
-                        imageRes = pastry.imageRes
+                        imageRes = pastry.imageRes,
+                        inPromotion = pastry.inPromotion,
+                        discountRate = pastry.discountRate
                     )
                     viewModel.addToCart(cartItem)
-                    // REMPLACEMENT ALERT PAR TOAST
                     Toast.makeText(requireContext(), "${pastry.name} ajouté au panier", Toast.LENGTH_SHORT).show()
                 }
             }

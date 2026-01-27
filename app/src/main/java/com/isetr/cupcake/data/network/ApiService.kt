@@ -7,10 +7,10 @@ interface ApiService {
     // --- UTILISATEURS (user.js) ---
     // Correction : Le serveur renvoie un objet avec un ID, pas un UserDto complet
     @POST("users")
-    suspend fun register(@Body user: UserDto): GenericResponse 
+    suspend fun register(@Body user: UserDto): GenericResponse
 
     @POST("users/login")
-    suspend fun login(@Body credentials: Map<String, String>): UserDto 
+    suspend fun login(@Body credentials: Map<String, String>): UserDto
 
     @PUT("users/{id}")
     suspend fun updateProfile(@Path("id") id: Int, @Body user: UserDto): GenericResponse
@@ -35,4 +35,7 @@ interface ApiService {
 
     @GET("orders/user/{userId}")
     suspend fun getOrderHistory(@Path("userId") userId: Int): List<OrderDto>
+
+    @POST("orders/review")
+    suspend fun submitReview(@Body reviewData: Map<String, String>): GenericResponse
 }

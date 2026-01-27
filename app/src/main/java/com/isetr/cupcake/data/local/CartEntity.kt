@@ -7,10 +7,12 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "cart_items")
 data class CartEntity(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val userId: Int,       // links to the logged-in user
-    val productId: String, // the pastry id
+    val userId: Int,
+    val productId: String,
     val name: String,
     val price: Double,
     @DrawableRes val imageRes: Int,
-    val quantity: Int = 1
+    val quantity: Int = 1,
+    val inPromotion: Boolean = false, // AJOUTÉ
+    val discountRate: Int = 0         // AJOUTÉ
 )

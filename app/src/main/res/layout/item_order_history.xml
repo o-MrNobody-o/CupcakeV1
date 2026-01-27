@@ -16,6 +16,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- Header et Infos existantes -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,7 +40,6 @@
                     android:id="@+id/tvOrderDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="12/05/2024"
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:textSize="14sp" />
@@ -48,7 +48,6 @@
                     android:id="@+id/tvPaymentMethod"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Paiement: Carte"
                     android:textSize="12sp"
                     android:textColor="@color/cupcake_brown" />
             </LinearLayout>
@@ -57,7 +56,6 @@
                 android:id="@+id/tvOrderAmount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="25.0 TND"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:textSize="16sp" />
@@ -70,27 +68,60 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"/>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvOrderStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:textColor="@color/cupcake_pink_dark" />
+
+        <!-- NOUVELLE SECTION : AVIS (REVIEW) -->
+        
+        <!-- Affichage de l'avis existant -->
+        <TextView
+            android:id="@+id/tvExistingReview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginTop="8dp"
+            android:textStyle="italic"
+            android:textColor="@color/black"
+            android:visibility="gone" />
 
-            <TextView
+        <!-- Formulaire de saisie d'avis -->
+        <LinearLayout
+            android:id="@+id/layoutReview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Votre avis sur cette commande">
+                
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etReview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:textSize="13sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmitReview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Statut: "
-                android:textSize="13sp"
-                android:textColor="@color/black"/>
-
-            <TextView
-                android:id="@+id/tvOrderStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Livrée"
-                android:textStyle="bold"
-                android:textSize="13sp"
-                android:textColor="@color/cupcake_pink_dark" />
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:text="Envoyer"
+                android:textSize="12sp"
+                app:cornerRadius="8dp"
+                android:backgroundTint="@color/cupcake_pink" />
         </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

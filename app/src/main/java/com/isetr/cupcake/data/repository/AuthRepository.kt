@@ -23,7 +23,7 @@ class AuthRepository(context: Context) {
                 email = user.email,
                 adresse = user.adresse,
                 telephone = user.telephone,
-                password = clearPassword // On envoie le mot de passe EN CLAIR au serveur Express
+                password = clearPassword 
             )
             
             val response = api.register(userDto)
@@ -31,7 +31,6 @@ class AuthRepository(context: Context) {
             
             if (serverId > 0) {
                 userDao.logoutAllUsers()
-                // On garde le mot de passe en local pour les vérifications de l'app
                 val finalUser = user.copy(id = serverId, isLoggedIn = true, password = clearPassword)
                 userDao.insertUser(finalUser)
                 "success"
@@ -41,40 +40,43 @@ class AuthRepository(context: Context) {
             val message = try { JSONObject(errorBody ?: "").getString("error") } catch (ex: Exception) { "Erreur 500" }
             if (message.contains("Duplicate entry")) "Cet email est déjà utilisé" else message
         } catch (e: Exception) {
-            "Serveur injoignable"
+            // On lève l'exception pour que le ViewModel puisse décider du fallback
+            throw e 
         }
     }
 
-    // --- CONNEXION ---
+    // --- CONNEXION (Correction : Ne pas renvoyer null si erreur RÉSEAU) ---
     suspend fun loginRemote(email: String, passwordEntered: String): UserEntity? {
-        return try {
-            val credentials = mapOf("email" to email, "password" to passwordEntered)
-            val remoteUser = api.login(credentials)
-            
-            // Le serveur a validé avec bcrypt.compare, on crée la session locale
-            val userEntity = UserEntity(
-                id = remoteUser.id ?: 0,
-                nom = remoteUser.nom,
-                prenom = remoteUser.prenom,
-                email = remoteUser.email,
-                adresse = remoteUser.adresse ?: "",
-                telephone = remoteUser.telephone ?: "",
-                password = passwordEntered, // On stocke pour la session locale (ex: suppression compte)
-                isLoggedIn = true
-            )
-            userDao.logoutAllUsers()
-            userDao.insertUser(userEntity)
-            userEntity
-        } catch (e: Exception) {
-            Log.e(TAG, "Login error: ${e.message}")
-            null
-        }
+        // On ne met pas de try/catch ici, on laisse l'exception remonter au ViewModel
+        val credentials = mapOf("email" to email, "password" to passwordEntered)
+        val remoteUser = api.login(credentials)
+        
+        val userEntity = UserEntity(
+            id = remoteUser.id ?: 0,
+            nom = remoteUser.nom,
+            prenom = remoteUser.prenom,
+            email = remoteUser.email,
+            adresse = remoteUser.adresse ?: "",
+            telephone = remoteUser.telephone ?: "",
+            password = passwordEntered,
+            isLoggedIn = true
+        )
+        userDao.logoutAllUsers()
+        userDao.insertUser(userEntity)
+        return userEntity
     }
 
     suspend fun getCurrentUser(): UserEntity? = userDao.getActiveUser()
     suspend fun logout() = userDao.logoutAllUsers()
     suspend fun deleteUser(user: UserEntity) = userDao.deleteUser(user)
+    suspend fun getUserByEmail(email: String): UserEntity? = userDao.getUserByEmail(email)
     
+    suspend fun loginUser(user: UserEntity) {
+        userDao.logoutAllUsers()
+        user.isLoggedIn = true
+        userDao.updateUser(user)
+    }
+
     suspend fun updateUser(user: UserEntity): Boolean {
         return try {
             val userDto = UserDto(id = user.id, nom = user.nom, prenom = user.prenom, email = user.email, adresse = user.adresse, telephone = user.telephone)

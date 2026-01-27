@@ -2,8 +2,6 @@ package com.isetr.cupcake.ui.products
 
 import android.graphics.Color
 import android.os.Bundle
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -81,16 +79,18 @@ class PastryProductsFragment : Fragment() {
             onDetailClick = { pastry -> showPastryDescription(pastry) },
             onAddToCartClick = { pastry ->
                 if (currentUserId > 0) {
+                    // --- CORRECTION : TRANSMISSION DU DISCOUNT ---
                     val cartItem = CartEntity(
                         productId = pastry.id,
                         userId = currentUserId,
                         name = pastry.name,
                         price = pastry.price,
                         quantity = 1,
-                        imageRes = pastry.imageRes
+                        imageRes = pastry.imageRes,
+                        inPromotion = pastry.inPromotion, // Transmis à Room
+                        discountRate = pastry.discountRate // Transmis à Room
                     )
                     viewModel.addToCart(cartItem)
-                    // REMPLACEMENT ALERT PAR TOAST
                     Toast.makeText(requireContext(), "${pastry.name} ajouté au panier", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(requireContext(), "Veuillez vous connecter", Toast.LENGTH_SHORT).show()
