@@ -20,34 +20,39 @@ class OrderRepository(context: Context) {
         }
     }
 
-    // --- NOUVEAU : ENVOYER UN AVIS ---
+    /**
+     * Envoie un avis. Sauvegarde localement même si le serveur est indisponible.
+     */
     suspend fun submitOrderReview(orderId: Int, review: String): Boolean {
+        // 1. MISE À JOUR LOCALE IMMÉDIATE (ROOM)
+        // Cela garantit que l'utilisateur voit son avis même sans internet
+        try {
+            val order = orderDao.getOrderById(orderId)
+            order?.let {
+                val updatedOrder = it.copy(review = review)
+                orderDao.updateOrder(updatedOrder)
+            }
+        } catch (e: Exception) {
+            Log.e("OrderRepository", "Erreur Room Review: ${e.message}")
+            return false
+        }
+
+        // 2. TENTATIVE DE SYNCHRONISATION AVEC LE SERVEUR
         return try {
-            // 1. Envoyer au serveur Express
             val reviewData = mapOf(
                 "orderId" to orderId.toString(),
                 "review" to review
             )
             val response = api.submitReview(reviewData)
-            
-            if (response.success == true) {
-                // 2. Mettre à jour localement dans Room
-                val order = orderDao.getOrderById(orderId)
-                order?.let {
-                    val updatedOrder = it.copy(review = review)
-                    orderDao.updateOrder(updatedOrder)
-                }
-                true
-            } else false
+            response.success == true
         } catch (e: Exception) {
-            Log.e("OrderRepository", "Erreur avis: ${e.message}")
-            false
+            // Si le serveur est injoignable, on renvoie true quand même 
+            // car la sauvegarde locale (Room) a réussi !
+            Log.w("OrderRepository", "Serveur injoignable, avis gardé en local uniquement")
+            true 
         }
     }
 
-    /**
-     * Récupère toutes les commandes de l'utilisateur actuellement connecté.
-     */
     suspend fun getOrdersForActiveSession(): List<OrderEntity> {
         val activeUser = userDao.getActiveUser()
         return if (activeUser != null) {
@@ -65,12 +70,7 @@ class OrderRepository(context: Context) {
     }
 
     suspend fun getAllOrders(userId: Int): List<OrderEntity> {
-        return try {
-            // Optionnel : on pourrait synchroniser avec le serveur ici
-            orderDao.getAllOrdersByUser(userId)
-        } catch (e: Exception) {
-            orderDao.getAllOrdersByUser(userId)
-        }
+        return orderDao.getAllOrdersByUser(userId)
     }
 
     suspend fun updateOrderStatus(order: OrderEntity) {

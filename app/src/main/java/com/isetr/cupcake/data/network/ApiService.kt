@@ -4,22 +4,22 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // --- UTILISATEURS (user.js) ---
-    // Correction : Le serveur renvoie un objet avec un ID, pas un UserDto complet
     @POST("users")
     suspend fun register(@Body user: UserDto): GenericResponse
-
+    // 3. @Body : transforme automatiquement l'objet UserDto en JSON
     @POST("users/login")
     suspend fun login(@Body credentials: Map<String, String>): UserDto
 
     @PUT("users/{id}")
     suspend fun updateProfile(@Path("id") id: Int, @Body user: UserDto): GenericResponse
 
-    // --- PRODUITS (produit.js) ---
+    // --- NOUVEAU : SUPPRESSION DE COMPTE DISTANTE ---
+    @DELETE("users/{id}")
+    suspend fun deleteAccountRemote(@Path("id") id: Int): GenericResponse
+
     @GET("produits")
     suspend fun getPastries(): List<PastryDto>
 
-    // --- PANIER (cart.js) ---
     @GET("cart/{userId}")
     suspend fun getCart(@Path("userId") userId: Int): List<CartItemDto>
 
@@ -29,7 +29,6 @@ interface ApiService {
     @DELETE("cart/remove/{id}")
     suspend fun removeFromCartRemote(@Path("id") id: Int): GenericResponse
 
-    // --- COMMANDES (order.js) ---
     @POST("orders")
     suspend fun placeOrder(@Body order: OrderDto): GenericResponse
 

@@ -7,24 +7,19 @@ import com.isetr.cupcake.data.network.PastryDto
 class PastryMapper(private val context: Context) {
 
     fun toEntity(dto: PastryDto): Pastry {
-        // Base du serveur (IP + Port)
-        val serverBase = "http://10.191.254.121:3000"
+        // IP mise à jour : 192.168.1.135
+        val serverBase = "http://192.168.1.135:3000"
         
-        // Construction robuste de l'URL
         val finalImageUrl = if (!dto.imageName.isNullOrEmpty()) {
             val name = dto.imageName!!
             when {
-                // 1. Déjà une URL complète
                 name.startsWith("http") -> name
-                // 2. Le nom contient déjà /images/ (cas actuel détecté)
                 name.startsWith("/images/") -> serverBase + name
                 name.startsWith("images/") -> "$serverBase/$name"
-                // 3. Juste le nom du fichier (ex: cup.jpg)
                 else -> "$serverBase/images/${name.trimStart('/')}"
             }
         } else null
 
-        // Secours local (recherche dans drawable)
         val resName = dto.imageName?.substringAfterLast("/")?.substringBefore(".") ?: ""
         val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
 
